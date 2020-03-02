@@ -36,7 +36,7 @@ setup(
     description="ESM Archiving gives you modern tools for putting your run on the tape",
     entry_points={
         'console_scripts': [
-            'esm_archiving=esm_archiving.cli:main',
+            'esm_archive=esm_archiving.cli:main',
         ],
     },
     install_requires=requirements,

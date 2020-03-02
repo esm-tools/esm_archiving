@@ -14,9 +14,47 @@
 import logging
 import os
 import re
+import subprocess
+import sys
+import tarfile
 
 # Third-Party Libraries:
 import pandas as pd
+import tqdm
+
+
+
+def query_yes_no(question, default="yes"):
+    """Ask a yes/no question via raw_input() and return their answer.
+
+    "question" is a string that is presented to the user.
+    "default" is the presumed answer if the user just hits <Enter>.
+        It must be "yes" (the default), "no" or None (meaning
+        an answer is required of the user).
+
+    The "answer" return value is True for "yes" or False for "no".
+    """
+    valid = {"yes": True, "y": True, "ye": True,
+             "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' "
+                             "(or 'y' or 'n').\n")
 
 
 def find_indices_of(char, in_string):
@@ -347,18 +385,126 @@ def get_files_for_date_range(
 def sort_files_to_tarlists(model_files, start_date, end_date, config):
     out_lists = {}
     for model in model_files:
-        frequency = config[model]["frequency"]
+        frequency = config.get(model, {}).get("archive", {}).get("frequency")
+        date_format = config.get(model, {}).get("archive", {}).get("date_format")
         out_lists[model] = []
         for filepattern in model_files[model]:
             out_lists[model].append(
-                get_files_for_date_range(filepattern, start_date, end_date, frequency)
+                get_files_for_date_range(
+                    filepattern,
+                    start_date,
+                    end_date,
+                    frequency,
+                    date_format=date_format,
+                )
             )
+        out_lists[model] = list(
+            set([item for sublist in out_lists[model] for item in sublist])
+        )
     return out_lists
 
 
-# Check size of all files in each list
-# Pack the files into tarball(s), depending on the size of the list
 # Perform an integrity check
+def check_tar_lists(tar_lists):
+    existing_tar_lists = {}
+    missing_tar_lists = {}
+    for model in tar_lists:
+        existing_tar_lists[model] = [f for f in tar_lists[model] if os.path.isfile(f)]
+        missing_tar_lists[model] = [
+            f for f in tar_lists[model] if not os.path.isfile(f)
+        ]
+    return existing_tar_lists, missing_tar_lists
+
+
+# Check size of all files in each list
+def sum_tar_lists(tar_lists):
+    sizes = {}
+    for model in tar_lists:
+        sizes[model] = sum(os.path.getsize(f) for f in tar_lists[model])
+    return sizes
+
+
+def sum_tar_lists_human_readable(tar_lists):
+    def human_readable_size(size, decimal_places=3):
+        for unit in ["B", "KiB", "MiB", "GiB", "TiB"]:
+            if size < 1024.0:
+                break
+            size /= 1024.0
+        return f"{size:.{decimal_places}f}{unit}"
+
+    sizes = {k: human_readable_size(v) for k, v in sum_tar_lists(tar_lists).items()}
+    return sizes
+
+
+# Split into multiple lists based on size:
+def split_list_due_to_size_limit(in_list, slimit):
+    flist = in_list.copy()
+    current_size = 0
+    total_list = []
+    current_list = []
+    while flist:
+        current_file = flist.pop(0)
+        current_size += os.path.getsize(current_file)
+        current_list.append(current_file)
+        print(current_size)
+        if (current_size >= slimit * 0.8):
+            print("Critical size exceeded! Starting new list!")
+            total_list.append(current_list)
+            current_size = 0
+            current_list = []
+    if current_list:
+        total_list.append(current_list)
+    return total_list
+
+
+# Pack the files into tarball(s), depending on the size of the list
+def pack_tarfile(flist, outname):
+    with tarfile.open(outname, "w:gz") as tar:
+        for f in tqdm.tqdm(flist):
+            tar.add(f, arcname=os.path.basename(f))
+    return outname
+
+
 # Write a small log of what is in that tarball
+def log_tarfile_contents(tfile):
+    with tarfile.open(tfile) as tar:
+        with open(os.path.splitext(tfile)[0]+".tar_contents", "w") as contents:
+            for member in tar.getmembers():
+                # INFO: For which attributes you can write, see here:
+                # https://docs.python.org/3/library/tarfile.html#tarfile.TarInfo
+                for attr in ["name", "size"]:
+                    contents.write(str(getattr(member, attr)))
+                    contents.write("\t")
+                contents.write("\n")
+
 # Upload the tarball to the tape
+def put_archive_on_tape(tfile, tape_command):
+    """
+    Puts the ``tfile`` to the tape archive using ``tape_command``
+
+    Parameters
+    ----------
+    tfile : str
+        The filename to put to tape
+    tape_command : str
+        The command to use. Here, the substring ARCHIVE_FILE will be replaced
+        with ``tfile``.
+    """
+    subprocess.run(
+            tape_command.replace("ARCHIVE_FILE", tfile),
+            shell=True,
+            check=True
+            )
+
 # If requested, delete the original data
+def delete_original_data(tfile, force=False):
+    with tarfile.open(tfile) as tar:
+        if not force:
+            print("WARNING! You are about to delete these files:")
+            for f in tar.getnames():
+                print(f)
+            response = query_yes_no("Do you want to continue?", default="no")
+            if not response:
+                return
+        for f in tar.getnames():
+            os.remove(f)
