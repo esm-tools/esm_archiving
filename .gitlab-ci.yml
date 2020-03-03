@@ -37,7 +37,7 @@ pages:
     - ubuntu
   script:
     - pip install sphinx sphinx-rtd-theme
-    - pwd; ls
+    - pip install .
     - cd docs ; make html
     - mv _build/html/ ../public/
   artifacts:
