@@ -23,7 +23,6 @@ import pandas as pd
 import tqdm
 
 
-
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
 
@@ -34,8 +33,7 @@ def query_yes_no(question, default="yes"):
 
     The "answer" return value is True for "yes" or False for "no".
     """
-    valid = {"yes": True, "y": True, "ye": True,
-             "no": False, "n": False}
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     if default is None:
         prompt = " [y/n] "
     elif default == "yes":
@@ -48,13 +46,12 @@ def query_yes_no(question, default="yes"):
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
-        if default is not None and choice == '':
+        if default is not None and choice == "":
             return valid[default]
         elif choice in valid:
             return valid[choice]
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' "
-                             "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
 def find_indices_of(char, in_string):
@@ -447,7 +444,7 @@ def split_list_due_to_size_limit(in_list, slimit):
         current_size += os.path.getsize(current_file)
         current_list.append(current_file)
         print(current_size)
-        if (current_size >= slimit * 0.8):
+        if current_size >= slimit * 0.8:
             print("Critical size exceeded! Starting new list!")
             total_list.append(current_list)
             current_size = 0
@@ -468,7 +465,7 @@ def pack_tarfile(flist, outname):
 # Write a small log of what is in that tarball
 def log_tarfile_contents(tfile):
     with tarfile.open(tfile) as tar:
-        with open(os.path.splitext(tfile)[0]+".tar_contents", "w") as contents:
+        with open(os.path.splitext(tfile)[0] + ".tar_contents", "w") as contents:
             for member in tar.getmembers():
                 # INFO: For which attributes you can write, see here:
                 # https://docs.python.org/3/library/tarfile.html#tarfile.TarInfo
@@ -476,6 +473,7 @@ def log_tarfile_contents(tfile):
                     contents.write(str(getattr(member, attr)))
                     contents.write("\t")
                 contents.write("\n")
+
 
 # Upload the tarball to the tape
 def put_archive_on_tape(tfile, tape_command):
@@ -490,11 +488,8 @@ def put_archive_on_tape(tfile, tape_command):
         The command to use. Here, the substring ARCHIVE_FILE will be replaced
         with ``tfile``.
     """
-    subprocess.run(
-            tape_command.replace("ARCHIVE_FILE", tfile),
-            shell=True,
-            check=True
-            )
+    subprocess.run(tape_command.replace("ARCHIVE_FILE", tfile), shell=True, check=True)
+
 
 # If requested, delete the original data
 def delete_original_data(tfile, force=False):
