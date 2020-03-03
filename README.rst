@@ -6,8 +6,8 @@ ESM Archiving
 .. image:: https://img.shields.io/pypi/v/esm_archiving.svg
         :target: https://pypi.python.org/pypi/esm_archiving
 
-.. image:: https://img.shields.io/travis/pgierz/esm_archiving.svg
-        :target: https://travis-ci.org/pgierz/esm_archiving
+.. image:: https://gitlab.awi.de/esm_tools/esm_archiving/badges/master/pipeline.svg
+        :target: https://gitlab.awi.de/esm_tools/esm_archiving/commits/master
 
 .. image:: https://readthedocs.org/projects/esm-archiving/badge/?version=latest
         :target: https://esm-archiving.readthedocs.io/en/latest/?badge=latest
