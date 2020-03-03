@@ -211,7 +211,8 @@ def get_list_from_filepattern(filepattern):
 
 def stamp_filepattern(filepattern):
     """
-    Transforms # in filepatterns to >>>DATE<<< and replaces other numbers back to original
+    Transforms # in filepatterns to >>>DATE<<< and replaces other numbers back
+    to original
 
     Parameters
     ----------
@@ -250,7 +251,8 @@ def determine_potential_datestamp_locations(filepattern):
     Returns
     -------
     list :
-        A list of slice object which you can use to cut out dates from the filepattern
+        A list of slice object which you can use to cut out dates from the
+        filepattern
     """
     indexes = list(
         find_indices_of("#", "".join([r"#" if c.isdigit() else c for c in filepattern]))
@@ -280,7 +282,8 @@ def determine_potential_datestamp_locations(filepattern):
 
 def determine_datestamp_location(files):
     """
-    Given a list of files; figures where the datestamp is by checking if it varies.
+    Given a list of files; figures where the datestamp is by checking if it
+    varies.
 
     Parameters
     ----------
@@ -302,7 +305,8 @@ def determine_datestamp_location(files):
         If the length of the file list is not longer than 1.
     """
     assert len(files) > 1
-    filepattern = files[0]  # Use the first file as a template (Probably a bad idea)
+    # Use the first file as a template (Probably a bad idea):
+    filepattern = files[0]
     slices = determine_potential_datestamp_locations(filepattern)
     valid_slices = []
     for slice_ in slices:
@@ -329,8 +333,8 @@ def get_files_for_date_range(
     start_date : str
         The starting date, in a pandas-friendly date format
     stop_date : str
-        Ending date, pandas friendly. Note that for end dates, you need to **add
-        one month** to assure that you get the last step in your list!
+        Ending date, pandas friendly. Note that for end dates, you need to
+        **add one month** to assure that you get the last step in your list!
     frequency : str
         Frequency of dates, pandas friendly
     date_format : str
@@ -395,8 +399,8 @@ def sort_files_to_tarlists(model_files, start_date, end_date, config):
                     date_format=date_format,
                 )
             )
-        out_lists[model] = list(
-            set([item for sublist in out_lists[model] for item in sublist])
+        out_lists[model] = sorted(
+            list(set([item for sublist in out_lists[model] for item in sublist]))
         )
     return out_lists
 
@@ -443,9 +447,9 @@ def split_list_due_to_size_limit(in_list, slimit):
         current_file = flist.pop(0)
         current_size += os.path.getsize(current_file)
         current_list.append(current_file)
-        print(current_size)
+        logging.debug(current_size)
         if current_size >= slimit * 0.8:
-            print("Critical size exceeded! Starting new list!")
+            logging.debug("Critical size exceeded! Starting new list!")
             total_list.append(current_list)
             current_size = 0
             current_list = []
