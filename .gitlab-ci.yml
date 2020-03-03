@@ -25,12 +25,16 @@ before_script:
   - source venv/bin/activate
 
 test:
+  tags:
+    - ubuntu
   script:
     # - python setup.py test
     - pip install tox black  # you can also use tox
     - tox -e py36,black
 
 pages:
+  tags:
+    - ubuntu
   script:
     - pip install sphinx sphinx-rtd-theme
     - pwd; ls
