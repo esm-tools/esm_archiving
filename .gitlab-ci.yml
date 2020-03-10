@@ -27,6 +27,7 @@ before_script:
 test:
   tags:
     - ubuntu
+    - ollie
   script:
     # - python setup.py test
     - pip install tox black  # you can also use tox
