@@ -1,11 +1,3 @@
-# @Author: Paul Gierz <pgierz>
-# @Date:   2020-02-28T07:08:00+01:00
-# @Email:  pgierz@awi.de
-# @Filename: test_esm_archiving.py
-# @Last modified by:   pgierz
-# @Last modified time: 2020-03-09T06:56:45+01:00
-
-
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
@@ -14,11 +6,11 @@
 # Standard Library
 import os
 import pickle
-import unittest
+
+# import unittest
 
 # Third-Party
 from click.testing import CliRunner
-import mock
 from pyfakefs.fake_filesystem_unittest import TestCase
 
 # This module
