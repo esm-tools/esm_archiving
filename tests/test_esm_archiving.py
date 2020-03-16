@@ -18,9 +18,7 @@ from esm_archiving import esm_archiving
 from esm_archiving import cli
 
 
-class TestEsm_archiving(TestCase):
-    """Tests for `esm_archiving` package."""
-
+class TestESM_archiving_fakefs(TestCase):
     def setUp(self):
         """Set up test fixtures, if any."""
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -28,14 +26,24 @@ class TestEsm_archiving(TestCase):
         with open(test_walk_file, "rb") as f:
             rvalue = pickle.load(f)
         self.setUpPyfakefs()
-        print("Initialized fake file system!")
         for root, dirs, files in rvalue:
             for dir_ in dirs:
-                print("Making directory:", os.path.join(root, dir_))
+                # Skip post dirs
+                if dir_.startswith("post"):
+                    continue
                 os.makedirs(os.path.join(root, dir_))
             for file in files:
-                print("Making file:", os.path.join(root, file))
                 self.fs.create_file(os.path.join(root, file))
+
+    def tearDown(self):
+        """Tear down test fixtures, if any."""
+
+
+class TestEsm_archiving(TestCase):
+    """Tests for `esm_archiving` package."""
+
+    def setUp(self):
+        """Set up test fixtures, if any."""
 
     def tearDown(self):
         """Tear down test fixtures, if any."""

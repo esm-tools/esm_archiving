@@ -15,7 +15,7 @@ requirements = ["Click>=6.0", "pandas", "tqdm"]
 
 setup_requirements = []
 
-test_requirements = []
+test_requirements = ["pyfakefs"]
 
 setup(
     author="Paul Gierz",
