@@ -38,6 +38,63 @@ class TestESM_archiving_fakefs(TestCase):
     def tearDown(self):
         """Tear down test fixtures, if any."""
 
+    def test_walk_through_model_dir(self):
+        """
+        Checks if walking through a modeltype file directory for a specific
+        model can clean numbers correctly.
+        """
+
+        grouped_files = esm_archiving._walk_through_model_dir_clean_numbers(
+            "./AWIESM1.1_benchmark_001/outdata/echam"
+        )
+
+        expected_answer = [
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hrpt_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymax_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hrpt_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagmon_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_accw_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ma_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echammon_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeropt#hrpt_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagmon_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagday_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_LOG_mm_######.nc",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_BOT_mm_######.nc",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hr_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptday_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagmon_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamday_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#mon_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeropt#hrpt_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiag#hrpt_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptday_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagday_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymin_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymin_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/echam_output_results_.txt",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#mon_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ma_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagmon_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptmon_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiag#hrpt_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymax_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ATM_mm_######.nc",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagday_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamday_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagday_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptmon_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hr_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_accw_######.codes",
+            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echammon_######.grb",
+            "./AWIESM1.1_benchmark_001/outdata/echam/echam_output_setup_########.txt",
+        ]
+        self.assertEqual(expected_answer, grouped_files)
+
 
 class TestEsm_archiving(TestCase):
     """Tests for `esm_archiving` package."""
@@ -53,12 +110,9 @@ class TestEsm_archiving(TestCase):
         runner = CliRunner()
         result = runner.invoke(cli.main)
         assert result.exit_code == 0
-        print(result.output)
-        assert "esm_archiving.cli.main" in result.output
         help_result = runner.invoke(cli.main, ["--help"])
         assert help_result.exit_code == 0
-        print(help_result.output)
-        assert "--help  Show this message and exit." in help_result.output
+        assert "  --help     Show this message and exit." in help_result.output
 
     def test_find_indicies(self):
         """Checks if find_indices_of can find # correctly"""
@@ -130,29 +184,3 @@ class TestEsm_archiving(TestCase):
             date_format="%Y%m",
         )
         self.assertEqual(out_files, test_files)
-
-    def test_walk_through_model_dir(self):
-        """
-        Checks if walking through a modeltype file directory for a specific
-        model can clean numbers correctly.
-        """
-        grouped_files = esm_archiving._walk_through_model_dir_clean_numbers(
-            "./outdata/echam"
-        )
-        expected_answer = [
-            "./LGM_###_echam#_echam_######.grb",
-            "./LGM_###_echam#_LOG_mm_######.nc",
-            "./LGM_###_echam#_accw_######.grb",
-            "./LGM_###_echam#_co#_######.grb",
-            "./LGM_###_######.##_accw.codes",
-            "./LGM_###_echam#_BOT_mm_######.nc",
-            "./LGM_###_echam#_ATM_mm_######.nc",
-            "./LGM_###_######.##_echam.codes",
-            "./echam_output_setup_########.txt",
-            "./LGM_###_######.##_co#.codes",
-            "./LGM_###_echam#_co#.codes",
-            "./LGM_###_echam#_accw.codes",
-            "./echam_output_results_.txt",
-            "./LGM_###_echam#_echam.codes",
-        ]
-        self.assertEqual(expected_answer, grouped_files)
