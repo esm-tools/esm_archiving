@@ -23,10 +23,20 @@ ESM Archiving gives you modern tools for putting your run on the tape
 * Documentation: https://esm-archiving.readthedocs.io.
 
 
-Features
---------
+Benchmarked Tests
+-----------------
 
-* TODO
+``esm_archiving`` is tested against a few standard runs to ensure everything 
+works smoothly. The table below shows which experiments are tested
+
+Please note that currently, the benchmark run is still in production. Automatic
+testing will resume once the data are available.
+
++-----------------------------+-----------------------+------------+
+| Experiment                  | ESM Runscript Version | Model      |
++-----------------------------+-----------------------+------------+
+| ``AWIESM1.1_benchmark_001`` | ?                     | AWIESM 1.1 |
++-----------------------------+-----------------------+------------+
 
 Credits
 -------

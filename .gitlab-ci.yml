@@ -31,6 +31,19 @@ test:
     # - python setup.py test
     - pip install tox black  # you can also use tox
     - tox -e py36,black
+    
+ollie_test:
+  tags:
+    - ollie
+  before_script:
+    - whoami
+    - hostname
+    - pwd
+    - ls -al
+  script:
+    # - python setup.py test
+    - pip install tox black  # you can also use tox
+    - tox -e py36,black
 
 pages:
   tags:
