@@ -65,7 +65,7 @@ def create(base_dir, filetype, start_date, end_date, force, interactive):
                 pp.pprint(missing)
                 if not force:
                     input("Press Enter to continue...")
-
+        
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover

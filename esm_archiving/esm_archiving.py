@@ -1,18 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# @Author: Paul Gierz <pgierz>
-# @Date:   2020-02-28T07:08:00+01:00
-# @Email:  pgierz@awi.de
-# @Filename: esm_archiving.py
-# @Last modified by:   pgierz
-# @Last modified time: 2020-03-06T07:31:17+01:00
 """This is the ``esm_archiving`` module."""
 
 # Standard Library:
 import logging
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tarfile
@@ -22,7 +16,7 @@ import pandas as pd
 import tqdm
 
 
-def query_yes_no(question, default="yes"):
+def query_yes_no(question, default="yes"):  # pragma: no cover
     """Ask a yes/no question via ``input()`` and return their answer.
 
     "question" is a string that is presented to the user.
@@ -150,11 +144,7 @@ def group_files(top, filetype):
         A dictonary containing keys for each folder found in ``filetype``, and
         values as lists of files with strings where numbers are replaced by #.
     """
-    model_dirs = [
-        model
-        for model in os.listdir(os.path.join(top, filetype))
-        if os.path.isdir(os.path.join(top, filetype, model))
-    ]
+    model_dirs = _generate_model_dirs(top, filetype)
     model_files = {model: None for model in model_dirs}
     for model_dir in model_dirs:
         cleaned_filepatterns = _walk_through_model_dir_clean_numbers(
@@ -162,6 +152,15 @@ def group_files(top, filetype):
         )
         model_files[model_dir] = cleaned_filepatterns
     return model_files
+
+
+def _generate_model_dirs(top, filetype):
+    model_dirs = [
+        model
+        for model in os.listdir(os.path.join(top, filetype))
+        if os.path.isdir(os.path.join(top, filetype, model))
+    ]
+    return model_dirs
 
 
 def _walk_through_model_dir_clean_numbers(top):
@@ -520,6 +519,32 @@ def split_list_due_to_size_limit(in_list, slimit):
     return total_list
 
 
+# Utility function to make running commands on the shell easier:
+def run_command(command):
+    """
+    Runs ``command`` and directly prints output to screen.
+
+    Parameters
+    ----------
+    command : str
+        The command to run, with pipes, redirects, whatever
+
+    Returns
+    -------
+    rc : int
+        The return code of the subprocess.
+    """
+    process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    rc = process.poll()
+    return rc
+
+
 # Pack the files into tarball(s), depending on the size of the list
 def pack_tarfile(flist, outname):
     """
@@ -539,9 +564,12 @@ def pack_tarfile(flist, outname):
         The output file name
     """
     # TODO(pgierz): Would it be more sensible to return the tarball object?
-    with tarfile.open(outname, "w:gz") as tar:
-        for f in tqdm.tqdm(flist):
-            tar.add(f, arcname=os.path.basename(f))
+    # TODO(pgierz): This would be much faster with: 
+    # tar -czvf AWIESM1.1_benchmark_001.tgz AWIESM1.1_benchmark_001 | tqdm --total $(find AWIESM1.1_benchmark_001 | wc -l) --unit files >> AWIESM1.1_benchmark_001.backup.log
+    run_command(f"tar --use-compress-program=pigz -cvf {outname} {" ".join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log")
+    #with tarfile.open(outname, "w:gz") as tar:
+    #    for f in tqdm.tqdm(flist):
+    #        tar.add(f, arcname=os.path.basename(f))
     return outname
 
 

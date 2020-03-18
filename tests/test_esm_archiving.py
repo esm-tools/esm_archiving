@@ -19,6 +19,7 @@ from esm_archiving import cli
 
 
 class TestESM_archiving_fakefs(TestCase):
+    # TODO: Make this setUpClass
     def setUp(self):
         """Set up test fixtures, if any."""
         dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -94,6 +95,17 @@ class TestESM_archiving_fakefs(TestCase):
             "./AWIESM1.1_benchmark_001/outdata/echam/echam_output_setup_########.txt",
         ]
         self.assertEqual(expected_answer, grouped_files)
+
+    def test_generate_model_dirs(self):
+        """
+        Checks if grouping files works correctly
+        """
+        model_dirs = esm_archiving._generate_model_dirs(
+            "./AWIESM1.1_benchmark_001", "outdata"
+        )
+        self.assertEqual(
+            model_dirs, ["echam", "oasis3mct", "hdmodel", "jsbach", "fesom"]
+        )
 
 
 class TestEsm_archiving(TestCase):
