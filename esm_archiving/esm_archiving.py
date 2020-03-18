@@ -1,19 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# @Author: Paul Gierz <pgierz>
-# @Date:   2020-02-28T07:08:00+01:00
-# @Email:  pgierz@awi.de
-# @Filename: esm_archiving.py
-# @Last modified by:   pgierz
-# @Last modified time: 2020-03-02T11:55:49+01:00
+"""This is the ``esm_archiving`` module."""
 
-
-"""Main module."""
-
+# Standard Library:
 import logging
 import os
 import re
+import shlex
 import subprocess
 import sys
 import tarfile
@@ -23,19 +16,33 @@ import pandas as pd
 import tqdm
 
 
-
-def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+def query_yes_no(question, default="yes"):  # pragma: no cover
+    """Ask a yes/no question via ``input()`` and return their answer.
 
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
-        It must be "yes" (the default), "no" or None (meaning
-        an answer is required of the user).
+
+    It must be "yes" (the default), "no" or None (meaning an answer is
+    required of the user).
 
     The "answer" return value is True for "yes" or False for "no".
+
+    Note: Shamelessly jacked from StackOverflow It's not hard to implement, but
+    Paul is lazy...
+
+    Parameters
+    ----------
+    question : str
+        The question you'd like to ask the user
+    default : str
+        The presumed answer for ``question``. Defaults to "yes".
+
+    Returns
+    -------
+    bool :
+        True if the user said yes, False if the use said no.
     """
-    valid = {"yes": True, "y": True, "ye": True,
-             "no": False, "n": False}
+    valid = {"yes": True, "y": True, "ye": True, "no": False, "n": False}
     if default is None:
         prompt = " [y/n] "
     elif default == "yes":
@@ -48,13 +55,12 @@ def query_yes_no(question, default="yes"):
     while True:
         sys.stdout.write(question + prompt)
         choice = input().lower()
-        if default is not None and choice == '':
+        if default is not None and choice == "":
             return valid[default]
         elif choice in valid:
             return valid[choice]
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' "
-                             "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
 
 
 def find_indices_of(char, in_string):
@@ -138,22 +144,34 @@ def group_files(top, filetype):
         A dictonary containing keys for each folder found in ``filetype``, and
         values as lists of files with strings where numbers are replaced by #.
     """
+    model_dirs = _generate_model_dirs(top, filetype)
+    model_files = {model: None for model in model_dirs}
+    for model_dir in model_dirs:
+        cleaned_filepatterns = _walk_through_model_dir_clean_numbers(
+            os.path.join(top, filetype, model_dir)
+        )
+        model_files[model_dir] = cleaned_filepatterns
+    return model_files
+
+
+def _generate_model_dirs(top, filetype):
     model_dirs = [
         model
         for model in os.listdir(os.path.join(top, filetype))
         if os.path.isdir(os.path.join(top, filetype, model))
     ]
-    model_files = {model: None for model in model_dirs}
-    for model_dir in model_dirs:
-        cleaned_filepatterns = []
-        for root, _, files in os.walk(os.path.join(top, filetype, model_dir)):
-            for file in files:
-                filepattern = "".join([r"#" if c.isdigit() else c for c in file])
-                filepattern = os.path.join(root, filepattern)
-                if filepattern not in cleaned_filepatterns:
-                    cleaned_filepatterns.append(filepattern)
-        model_files[model_dir] = cleaned_filepatterns
-    return model_files
+    return model_dirs
+
+
+def _walk_through_model_dir_clean_numbers(top):
+    cleaned_filepatterns = []
+    for root, _, files in os.walk(top):
+        for file in files:
+            filepattern = "".join([r"#" if c.isdigit() else c for c in file])
+            filepattern = os.path.join(root, filepattern)
+            if filepattern not in cleaned_filepatterns:
+                cleaned_filepatterns.append(filepattern)
+    return cleaned_filepatterns
 
 
 def purify_expid_in(model_files, expid, restore=False):
@@ -188,6 +206,22 @@ def purify_expid_in(model_files, expid, restore=False):
 
 
 def stamp_files(model_files):
+    """
+    Given a sttandard file dictioanry (keys: model names, values: filepattern);
+    figures out where the date probably is, and replaces the ``#`` sequence
+    with a >>>DATE<<< stamp.
+
+    Parameters
+    ----------
+    model_files : dict
+        Dictionary of keys (model names) where values are lists of files for
+        each model.
+
+    Returns
+    -------
+    dict :
+        As the input, but replaces the filepatterns with the >>>DATE<<< stamp.
+    """
     for model in model_files:
         for idx, filepattern in enumerate(model_files[model]):
             try:
@@ -214,7 +248,8 @@ def get_list_from_filepattern(filepattern):
 
 def stamp_filepattern(filepattern):
     """
-    Transforms # in filepatterns to >>>DATE<<< and replaces other numbers back to original
+    Transforms # in filepatterns to >>>DATE<<< and replaces other numbers back
+    to original
 
     Parameters
     ----------
@@ -253,7 +288,8 @@ def determine_potential_datestamp_locations(filepattern):
     Returns
     -------
     list :
-        A list of slice object which you can use to cut out dates from the filepattern
+        A list of slice object which you can use to cut out dates from the
+        filepattern
     """
     indexes = list(
         find_indices_of("#", "".join([r"#" if c.isdigit() else c for c in filepattern]))
@@ -283,7 +319,8 @@ def determine_potential_datestamp_locations(filepattern):
 
 def determine_datestamp_location(files):
     """
-    Given a list of files; figures where the datestamp is by checking if it varies.
+    Given a list of files; figures where the datestamp is by checking if it
+    varies.
 
     Parameters
     ----------
@@ -305,7 +342,8 @@ def determine_datestamp_location(files):
         If the length of the file list is not longer than 1.
     """
     assert len(files) > 1
-    filepattern = files[0]  # Use the first file as a template (Probably a bad idea)
+    # Use the first file as a template (Probably a bad idea):
+    filepattern = files[0]
     slices = determine_potential_datestamp_locations(filepattern)
     valid_slices = []
     for slice_ in slices:
@@ -332,8 +370,8 @@ def get_files_for_date_range(
     start_date : str
         The starting date, in a pandas-friendly date format
     stop_date : str
-        Ending date, pandas friendly. Note that for end dates, you need to **add
-        one month** to assure that you get the last step in your list!
+        Ending date, pandas friendly. Note that for end dates, you need to
+        **add one month** to assure that you get the last step in your list!
     frequency : str
         Frequency of dates, pandas friendly
     date_format : str
@@ -398,8 +436,8 @@ def sort_files_to_tarlists(model_files, start_date, end_date, config):
                     date_format=date_format,
                 )
             )
-        out_lists[model] = list(
-            set([item for sublist in out_lists[model] for item in sublist])
+        out_lists[model] = sorted(
+            list(set([item for sublist in out_lists[model] for item in sublist]))
         )
     return out_lists
 
@@ -418,6 +456,26 @@ def check_tar_lists(tar_lists):
 
 # Check size of all files in each list
 def sum_tar_lists(tar_lists):
+    """
+    Sums up the amount of space in the tar lists dictionary
+
+    Given ``tar_lists``, which is generally a dicitonary consisting of keys (model
+    names) and values (files to be tarred), figures out how much space the
+    **raw, uncompressed** files would use. Generally the compressed tarball
+    will take up less space.
+
+    Parameters
+    ----------
+    tar_lists : dict
+        Dictionary of file lists to be summed up. Reports every sum as a value
+        for the key of that particular list.
+
+    Returns
+    -------
+    dict :
+        Keys are the same as in the input, values are the sums (in bytes) of
+        all files present within the list.
+    """
     sizes = {}
     for model in tar_lists:
         sizes[model] = sum(os.path.getsize(f) for f in tar_lists[model])
@@ -425,6 +483,10 @@ def sum_tar_lists(tar_lists):
 
 
 def sum_tar_lists_human_readable(tar_lists):
+    """
+    As ``sum_tar_lists``m but gives back strings with human-readable sizes.
+    """
+
     def human_readable_size(size, decimal_places=3):
         for unit in ["B", "KiB", "MiB", "GiB", "TiB"]:
             if size < 1024.0:
@@ -446,9 +508,9 @@ def split_list_due_to_size_limit(in_list, slimit):
         current_file = flist.pop(0)
         current_size += os.path.getsize(current_file)
         current_list.append(current_file)
-        print(current_size)
-        if (current_size >= slimit * 0.8):
-            print("Critical size exceeded! Starting new list!")
+        logging.debug(current_size)
+        if current_size >= slimit * 0.8:
+            logging.debug("Critical size exceeded! Starting new list!")
             total_list.append(current_list)
             current_size = 0
             current_list = []
@@ -457,18 +519,85 @@ def split_list_due_to_size_limit(in_list, slimit):
     return total_list
 
 
+# Utility function to make running commands on the shell easier:
+def run_command(command):
+    """
+    Runs ``command`` and directly prints output to screen.
+
+    Parameters
+    ----------
+    command : str
+        The command to run, with pipes, redirects, whatever
+
+    Returns
+    -------
+    rc : int
+        The return code of the subprocess.
+    """
+    process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+    while True:
+        output = process.stdout.readline()
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    rc = process.poll()
+    return rc
+
+
 # Pack the files into tarball(s), depending on the size of the list
 def pack_tarfile(flist, outname):
-    with tarfile.open(outname, "w:gz") as tar:
-        for f in tqdm.tqdm(flist):
-            tar.add(f, arcname=os.path.basename(f))
+    """
+    Creates a compressed tarball (``outname``) with all files found in ``flist``.
+
+
+    Parameters
+    ----------
+    flist : list
+        A list of files to include in this tarball
+    outname : str
+        The output file name
+
+    Returns
+    -------
+    str :
+        The output file name
+    """
+    # TODO(pgierz): Would it be more sensible to return the tarball object?
+    # TODO(pgierz): This would be much faster with: 
+    # tar -czvf AWIESM1.1_benchmark_001.tgz AWIESM1.1_benchmark_001 | tqdm --total $(find AWIESM1.1_benchmark_001 | wc -l) --unit files >> AWIESM1.1_benchmark_001.backup.log
+    run_command(f"tar --use-compress-program=pigz -cvf {outname} {" ".join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log")
+    #with tarfile.open(outname, "w:gz") as tar:
+    #    for f in tqdm.tqdm(flist):
+    #        tar.add(f, arcname=os.path.basename(f))
     return outname
 
 
 # Write a small log of what is in that tarball
 def log_tarfile_contents(tfile):
+    """
+    Generates a log of the tarball contents
+
+    Parameters
+    ----------
+    tfile : str
+        The path for the tar file to generate a log for
+
+    Returns
+    -------
+    None
+
+    Warning
+    -------
+    Note that for this function to work, you need to have write permission in
+    the directory where the tarball is located. If not, this will probably
+    raise an OSError. It might be clever to raise an issue asking for a feature
+    request. I can imagine giving the location of the log path as an argument;
+    but would like to see if that is actually needed before implementing it...
+
+    """
     with tarfile.open(tfile) as tar:
-        with open(os.path.splitext(tfile)[0]+".tar_contents", "w") as contents:
+        with open(os.path.splitext(tfile)[0] + ".tar_contents", "w") as contents:
             for member in tar.getmembers():
                 # INFO: For which attributes you can write, see here:
                 # https://docs.python.org/3/library/tarfile.html#tarfile.TarInfo
@@ -476,6 +605,7 @@ def log_tarfile_contents(tfile):
                     contents.write(str(getattr(member, attr)))
                     contents.write("\t")
                 contents.write("\n")
+
 
 # Upload the tarball to the tape
 def put_archive_on_tape(tfile, tape_command):
@@ -489,15 +619,31 @@ def put_archive_on_tape(tfile, tape_command):
     tape_command : str
         The command to use. Here, the substring ARCHIVE_FILE will be replaced
         with ``tfile``.
+
+    Returns
+    -------
+    None
     """
-    subprocess.run(
-            tape_command.replace("ARCHIVE_FILE", tfile),
-            shell=True,
-            check=True
-            )
+    subprocess.run(tape_command.replace("ARCHIVE_FILE", tfile), shell=True, check=True)
+
 
 # If requested, delete the original data
 def delete_original_data(tfile, force=False):
+    """
+    Erases data which is found in the tar file.
+
+    Parameters
+    ----------
+    tfile : str
+        Path to the tarfille whose data should be erased.
+    force : bool
+        If False, asks the user if they really want to delete their files.
+        Otherwise just does this silently. Default is ``False``
+
+    Returns
+    -------
+    None
+    """
     with tarfile.open(tfile) as tar:
         if not force:
             print("WARNING! You are about to delete these files:")
