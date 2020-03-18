@@ -537,13 +537,13 @@ def run_command(command):
     process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
     while True:
         output = process.stdout.readline()
-        if output == '' and process.poll() is not None:
+        if output == "" and process.poll() is not None:
             break
         else:
             with open(os.path.join(os.environ["HOME"], "test.log"), "a+") as f:
                 f.write(str(output.strip()))
                 f.write(str(process.poll()))
-                f.write(80*"-"+"\n")
+                f.write(80 * "-" + "\n")
         if output:
             print(output.strip())
     rc = process.poll()
@@ -571,8 +571,10 @@ def pack_tarfile(flist, outname):
     # TODO(pgierz): Would it be more sensible to return the tarball object?
     # TODO(pgierz): This would be much faster with:
     # tar -czvf AWIESM1.1_benchmark_001.tgz AWIESM1.1_benchmark_001 | tqdm --total $(find AWIESM1.1_benchmark_001 | wc -l) --unit files >> AWIESM1.1_benchmark_001.backup.log
-    run_command(f"tar --use-compress-program=pigz -cvf {outname} {' '.join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log")
-    #with tarfile.open(outname, "w:gz") as tar:
+    run_command(
+        f"tar --use-compress-program=pigz -cvf {outname} {' '.join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log"
+    )
+    # with tarfile.open(outname, "w:gz") as tar:
     #    for f in tqdm.tqdm(flist):
     #        tar.add(f, arcname=os.path.basename(f))
     return outname

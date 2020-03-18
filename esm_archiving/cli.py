@@ -70,7 +70,9 @@ def create(base_dir, start_date, end_date, force, interactive):
                 input("Press Enter to continue...")
         for model in files:
             click.secho(f"Generating archive for {model} {filetype}")
-            archive_name = os.path.join(base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz")
+            archive_name = os.path.join(
+                base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
+            )
             click.secho(archive_name)
             input("Press Enter to continue...")
             out_fname = pack_tarfile(existing[model], archive_name)
