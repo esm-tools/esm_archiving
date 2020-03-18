@@ -35,6 +35,11 @@ test:
 ollie_test:
   tags:
     - ollie
+  before_script:
+    - whoami
+    - hostname
+    - pwd
+    - ls -al
   script:
     # - python setup.py test
     - pip install tox black  # you can also use tox
