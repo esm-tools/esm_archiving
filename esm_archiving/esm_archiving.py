@@ -534,20 +534,9 @@ def run_command(command):
     rc : int
         The return code of the subprocess.
     """
-    process = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-    while True:
-        output = process.stdout.readline()
-        if output == "" and process.poll() is not None:
-            break
-        else:
-            with open(os.path.join(os.environ["HOME"], "test.log"), "a+") as f:
-                f.write(str(output.strip()))
-                f.write(str(process.poll()))
-                f.write(80 * "-" + "\n")
-        if output:
-            print(output.strip())
-    rc = process.poll()
-    return rc
+    process = subprocess.check_call(
+        command, stdout=sys.stdout, stderr=subprocess.STDOUT, shell=True
+    )
 
 
 # Pack the files into tarball(s), depending on the size of the list
