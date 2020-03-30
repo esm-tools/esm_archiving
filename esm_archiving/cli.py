@@ -3,8 +3,10 @@
 """Console script for esm_archiving."""
 import sys
 import os
-import click
 import pprint
+
+import click
+import emoji
 
 
 from .esm_archiving import (
@@ -34,12 +36,13 @@ def main(args=None):
 @click.option("--force", is_flag=True)
 @click.option("--interactive", is_flag=True)
 def create(base_dir, start_date, end_date, force, interactive):
-    click.secho("Creating archives for:", color="green")
+    click.secho(
+        emoji.emojize(":file_cabinet:") + " Creating archives for:", color="green"
+    )
     click.secho(base_dir, color="green")
+    click.secho("From: %s" % start_date, color="green")
+    click.secho("To: %s" % end_date, color="green")
     for filetype in ["outdata", "restart"]:
-        click.secho("File: %s" % filetype, color="green")
-        click.secho("From: %s" % start_date, color="green")
-        click.secho("To: %s" % end_date, color="green")
         files = group_files(base_dir, filetype)
         files = stamp_files(files)
 
@@ -54,27 +57,23 @@ def create(base_dir, start_date, end_date, force, interactive):
 
         files = sort_files_to_tarlists(files, start_date, end_date, config)
         existing, missing = check_tar_lists(files)
-        click.secho("The following files were requested and found:")
-        pp.pprint(existing)
-        pp.pprint(sum_tar_lists_human_readable(existing))
         if interactive:
-            pass
-        if not force:
-            input("Press Enter to continue...")
+            click.secho("The following files were requested and found:")
+            pp.pprint(existing)
+            pp.pprint(sum_tar_lists_human_readable(existing))
         if missing:
-            click.secho("The following files were requested but missing:")
-            pp.pprint(missing)
             if interactive:
-                pass
-            if not force:
-                input("Press Enter to continue...")
+                click.secho("The following files were requested but missing:")
+                pp.pprint(missing)
         for model in files:
-            click.secho(f"Generating archive for {model} {filetype}")
+            click.secho(
+                emoji.emojize(":open_file_folder: --> :package:", use_aliases=True)
+                + f" Packing up files for {model} ({filetype})"
+            )
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             click.secho(archive_name)
-            input("Press Enter to continue...")
             out_fname = pack_tarfile(existing[model], archive_name)
 
 
