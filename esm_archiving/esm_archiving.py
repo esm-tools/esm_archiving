@@ -540,7 +540,7 @@ def run_command(command):
 
 
 # Pack the files into tarball(s), depending on the size of the list
-def pack_tarfile(flist, outname):
+def pack_tarfile(flist, wdir, outname):
     """
     Creates a compressed tarball (``outname``) with all files found in ``flist``.
 
@@ -549,6 +549,10 @@ def pack_tarfile(flist, outname):
     ----------
     flist : list
         A list of files to include in this tarball
+    wdir : str
+        The directory to "change" to when packing up the tar file. This will
+        (essentially) be used in the tar command as the -C option by stripping
+        off the beginning of the flist
     outname : str
         The output file name
 
@@ -558,10 +562,11 @@ def pack_tarfile(flist, outname):
         The output file name
     """
     # TODO(pgierz): Would it be more sensible to return the tarball object?
-    # TODO(pgierz): This would be much faster with:
-    # tar -czvf AWIESM1.1_benchmark_001.tgz AWIESM1.1_benchmark_001 | tqdm --total $(find AWIESM1.1_benchmark_001 | wc -l) --unit files >> AWIESM1.1_benchmark_001.backup.log
+    if not wdir.endswith("/"):
+        wdir += "/"
+    flist = [item.replace(wdir, "") for item in flist]
     run_command(
-        f"tar --use-compress-program=pigz -cvf {outname} {' '.join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log"
+        f"tar --use-compress-program=pigz -cvf {outname} -C {wdir} {' '.join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log"
     )
     # with tarfile.open(outname, "w:gz") as tar:
     #    for f in tqdm.tqdm(flist):
