@@ -10,9 +10,9 @@ import click
 import emoji
 
 
-from .external.pypftp import Pftp
 
 from .esm_archiving import (
+    archive_mistral,
     check_tar_lists,
     group_files,
     pack_tarfile,
@@ -88,17 +88,8 @@ def upload(base_dir, start_date, end_date):
     # Try to make the Pftp object before anything else happens to ensure that
     # that at least works...
 
-    # FIXME: This is currently still specific to DKRZ Mistral...
-    tape_server = Pftp()
-
     click.secho(" Uploading archives for:")
     click.secho(base_dir)
-    # TODO: Dependency on machine; only mistral works for now...
-    remote_base_dir = base_dir.replace("/work", "/hpss/arch")
-
-    # FIXME: DKRZ Mistral:
-    if not tape_server.exists(remote_base_dir):
-        tape_server.makedirs(remote_base_dir)
 
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
@@ -111,11 +102,7 @@ def upload(base_dir, start_date, end_date):
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             remote_archive_name = archive_name.replace(base_dir, remote_base_dir)
-            if os.path.isfile(archive_name) and os.stat(archive_name).st_size > 0:
-                # print(archive_name, "will be uploaded to", remote_archive_name)
-                tape_server.upload(archive_name, remote_archive_name)
-            else:
-                print(f"{archive_name} doesn't exist or is an empty file, skipping...")
+            archive_mistral(archive_name, remote_archive_name)
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover

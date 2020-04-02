@@ -15,6 +15,8 @@ import tarfile
 import pandas as pd
 import tqdm
 
+# This Library
+from .external.pypftp import Pftp
 
 def query_yes_no(question, default="yes"):  # pragma: no cover
     """Ask a yes/no question via ``input()`` and return their answer.
@@ -609,23 +611,41 @@ def log_tarfile_contents(tfile):
 
 
 # Upload the tarball to the tape
-def put_archive_on_tape(tfile, tape_command):
+def archive_mistral(tfile, rtfile=None):
     """
     Puts the ``tfile`` to the tape archive using ``tape_command``
 
     Parameters
     ----------
     tfile : str
-        The filename to put to tape
-    tape_command : str
-        The command to use. Here, the substring ARCHIVE_FILE will be replaced
-        with ``tfile``.
+        The full path of the file to put to tape
+
+    rtfile : str
+        The filename on the remote tape server. Defaults to None, in which case
+        a replacement is performed to keep as much of the filename the same as
+        possible. Example: /work/ab0246/a270077/experiment.tgz -->
+        /hpss/arch/ab0246/a270077/experiment.tgz
+
 
     Returns
     -------
     None
     """
-    subprocess.run(tape_command.replace("ARCHIVE_FILE", tfile), shell=True, check=True)
+    if not rtfile:
+        rtfile.replace("/work", "/hpss/arch")
+
+    remote_base_dir = os.path.dirname(rtfile)
+
+    tape_server = Pftp()
+
+    if not tape_server.exists(remote_base_dir):
+        tape_server.makedirs(remote_base_dir)
+
+    if os.path.isfile(tfile) and os.stat(tfile).st_size > 0:
+        # print(archive_name, "will be uploaded to", remote_archive_name)
+        tape_server.upload(tfile, rtfile)
+    else:
+        print(f"{rtfile} doesn't exist or is an empty file, skipping...")
 
 
 # If requested, delete the original data
