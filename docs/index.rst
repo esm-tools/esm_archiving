@@ -9,7 +9,8 @@ tool; allowing you to create archives while your simulations runs. As the
 project is written in Python, any of the functionality can also be embedded in
 othere scripts.
 
-See the installation guide for full instructions, but to get up and running, you can do::
+See the installation guide for full instructions, but to get up and running,
+you can do::
 
     # Set up a modern git and python environment:
     # Maybe needed on some machines:
@@ -19,10 +20,6 @@ See the installation guide for full instructions, but to get up and running, you
     pip install git+https://gitlab.awi.de/esm_tools/esm_archiving.git
 
 
-warning::
-
-    The feature description below is still under construction!!!
-
 Now, you can use ``esm_archive --help`` to get started with the command line
 interface. To create an archive::
 
@@ -30,13 +27,11 @@ interface. To create an archive::
 
 To upload::
 
-    esm_archive upload /path/to/experiment
+    esm_archive upload /path/to/experiment start_date end_date
 
-To retrieve::
 
-    esm_archive download /path/to/experiment
-
-More information can be found in the usage section.
+The next page is a quickstart. More information can be found in the usage
+section.
 
 
 .. toctree::
@@ -44,10 +39,9 @@ More information can be found in the usage section.
    :caption: Contents:
 
    readme
-   installation
    usage
+   configuration
    modules
-   contributing
    authors
    history
 

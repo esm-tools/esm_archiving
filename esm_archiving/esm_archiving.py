@@ -18,6 +18,7 @@ import tqdm
 # This Library
 from .external.pypftp import Pftp
 
+
 def query_yes_no(question, default="yes"):  # pragma: no cover
     """Ask a yes/no question via ``input()`` and return their answer.
 
@@ -29,7 +30,7 @@ def query_yes_no(question, default="yes"):  # pragma: no cover
 
     The "answer" return value is True for "yes" or False for "no".
 
-    Note: Shamelessly jacked from StackOverflow It's not hard to implement, but
+    Note: Shamelessly stolen from StackOverflow It's not hard to implement, but
     Paul is lazy...
 
     Parameters

@@ -9,8 +9,6 @@ import pprint
 import click
 import emoji
 
-
-
 from .esm_archiving import (
     archive_mistral,
     check_tar_lists,
@@ -21,17 +19,11 @@ from .esm_archiving import (
     sum_tar_lists_human_readable,
 )
 
+from .config import load_config
 
 pp = pprint.PrettyPrinter(width=41, compact=True)
+config = load_config()
 
-# TODO: Remove this; it needs to be automatically found or asked for:
-config = {
-    "echam": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
-    "jsbach": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
-    "hdmodel": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
-    "fesom": {"archive": {"frequency": "1Y", "date_format": "%Y%m"}},
-    "oasis3mct": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
-}
 
 @click.group()
 @click.version_option()
@@ -79,7 +71,6 @@ def create(base_dir, start_date, end_date, force, interactive):
             out_fname = pack_tarfile(existing[model], base_dir, archive_name)
 
 
-
 @main.command()
 @click.argument("base_dir")
 @click.argument("start_date")
@@ -103,6 +94,7 @@ def upload(base_dir, start_date, end_date):
             )
             remote_archive_name = archive_name.replace(base_dir, remote_base_dir)
             archive_mistral(archive_name, remote_archive_name)
+
 
 if __name__ == "__main__":
     sys.exit(main())  # pragma: no cover
