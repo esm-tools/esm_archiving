@@ -17,7 +17,7 @@ you can do::
     module load git
     module load python3
     # Install the archive project:
-    pip install git+https://gitlab.awi.de/esm_tools/esm_archiving.git
+    pip install git+https://github.com/esm-tools/esm_archiving.git
 
 
 Now, you can use ``esm_archive --help`` to get started with the command line

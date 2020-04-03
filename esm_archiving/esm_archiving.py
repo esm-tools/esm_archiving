@@ -593,11 +593,11 @@ def log_tarfile_contents(tfile):
 
     Warning
     -------
-    Note that for this function to work, you need to have write permission in
-    the directory where the tarball is located. If not, this will probably
-    raise an OSError. It might be clever to raise an issue asking for a feature
-    request. I can imagine giving the location of the log path as an argument;
-    but would like to see if that is actually needed before implementing it...
+        Note that for this function to work, you need to have write permission in
+        the directory where the tarball is located. If not, this will probably
+        raise an OSError.  I can imagine giving the location of the log path as
+        an argument; but would like to see if that is actually needed before
+        implementing it...
 
     """
     with tarfile.open(tfile) as tar:

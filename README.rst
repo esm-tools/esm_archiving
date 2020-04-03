@@ -25,7 +25,7 @@ Installing
 
 Run the following::
 
-    pip install git+https://gitlab.awi.de/esm_tools/esm_archiving
+    pip install git+https://github.com/esm-tools/esm_archiving
 
 Usage
 -----

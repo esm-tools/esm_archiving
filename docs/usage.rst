@@ -42,6 +42,10 @@ top of the experiment folder. Note that the final date (1851-01-1 in this
 example) is **not included**. During packing, you get a progress bar indicating
 when the tarball is finished.
 
+Please be aware that are size limits in place on DKRZ's tape server. Any tar
+files **larger than 500 Gb will be trucated**. For more information, see:
+https://www.dkrz.de/up/systems/hpss/hpss
+
 
 Uploading tarballs
 ------------------
@@ -57,9 +61,11 @@ directory::
     $ cat ~/.netrc
     machine tape.dkrz.de login a270077 password OMITTED
 
-This file needs to be readable/writable **only** for you, e.g. ``chmod 700``.
+This file needs to be readable/writable **only** for you, e.g. ``chmod 600``.
 The archiving program will then be able to automatically log into the tape
-server and upload the tarballs.
+server and upload the tarballs. Again, more information about logging onto the
+tape server without password authentication can be found here:
+https://www.dkrz.de/up/help/faq/hpss/how-can-i-use-the-hpss-tape-archive-without-typing-my-password-every-time-e-g-in-scripts-or-jobs
 
 =============
 Library Usage

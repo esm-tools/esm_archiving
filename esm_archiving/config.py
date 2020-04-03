@@ -12,6 +12,7 @@ in the following locations:
 The configuration file should in the YAML format. As an example:
 
 .. code::
+
     echam:  # The model name
         archive: # archive seperator **required**
             frequency: "1M" # Frequency specification
@@ -40,7 +41,7 @@ def load_config():
             os.path.join(os.path.expanduser("~"), ".config", "esm_archiving"),
             os.path.expanduser("~"),
             "/etc/esm_archiving",
-            os.environ.get("ESM_ARCHIVING_CONF"),
+            os.environ.get("ESM_ARCHIVING_CONF", "/dev/null"),
         ],
         [True, False, True, False, False,],
     ):
@@ -48,6 +49,7 @@ def load_config():
             read_config_fname = "." + CONFIG_FNAME
         else:
             read_config_fname = CONFIG_FNAME
+        print(loc, read_config_fname)
         try:
             with open(os.path.join(loc, read_config_fname)) as source:
                 config = yaml.load(source, Loader=yaml.FullLoader)
