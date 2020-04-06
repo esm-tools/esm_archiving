@@ -58,7 +58,7 @@ There are a few issues which shows what is planned for the near future:
 * Download and unpack functionality
 * Integrity checks for the tarballs
 
-Please feel free to add to the list by `opening an issue with the tag enhancement <https://github.com/esm-tools/esm_archiving/issues/new>`_/
+Please feel free to add to the list by `opening an issue with the tag enhancement <https://github.com/esm-tools/esm_archiving/issues/new>`_
 
 Benchmarked Tests
 -----------------
