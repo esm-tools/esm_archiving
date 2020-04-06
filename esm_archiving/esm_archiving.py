@@ -487,7 +487,7 @@ def sum_tar_lists(tar_lists):
 
 def sum_tar_lists_human_readable(tar_lists):
     """
-    As ``sum_tar_lists``m but gives back strings with human-readable sizes.
+    As ``sum_tar_lists`` but gives back strings with human-readable sizes.
     """
 
     def human_readable_size(size, decimal_places=3):

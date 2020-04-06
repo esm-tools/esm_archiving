@@ -2,6 +2,9 @@
 Usage
 =====
 
+Command Line Interface
+----------------------
+
 After installation, you have a new command in your path::
 
     esm_archive
@@ -25,7 +28,7 @@ to put it onto the tape server.
 
 
 Creating tarballs
------------------
+~~~~~~~~~~~~~~~~~
 
 Use ``esm_archive create`` to generate tar files from an experiment::
 
@@ -48,7 +51,7 @@ https://www.dkrz.de/up/systems/hpss/hpss
 
 
 Uploading tarballs
-------------------
+~~~~~~~~~~~~~~~~~~
 
 A second command ``esm_archive upload`` allows you to put tarballs onto to tape server at DKRZ::
 
@@ -67,9 +70,10 @@ server and upload the tarballs. Again, more information about logging onto the
 tape server without password authentication can be found here:
 https://www.dkrz.de/up/help/faq/hpss/how-can-i-use-the-hpss-tape-archive-without-typing-my-password-every-time-e-g-in-scripts-or-jobs
 
-=============
+
 Library Usage
-=============
+-------------
+
 To use ESM Archiving in a project::
 
     import esm_archiving
@@ -83,9 +87,8 @@ They are documented in the API. Perhaps immediately useful are:
 + ``pack_tarfile``
 + ``archive_mistral``
 
-==================
 Plugin to ESM Runs
-==================
+------------------
 
 .. warning::
     This functionality is still under construction
