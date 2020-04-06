@@ -41,14 +41,24 @@ Usage
 
 Once installed, you get the new binary ``esm_archiving``. You can generate tarballs for a standard run::
 
-    esm_archiving create /path/to/exp 1860-01-01 1870-01-01
+    esm_archive create /path/to/exp 1860-01-01 1870-01-01
 
 Then upload to the tape server::
 
-    esm_archiving upload /path/to/exp 1860-01-01 1870-01-01
+    esm_archive upload /path/to/exp 1860-01-01 1870-01-01
 
 For more detailed descriptions, see the documentation.
 
+Roadmap
+-------
+
+There are a few issues which shows what is planned for the near future:
+
+* Support for ``hssrv2.awi.de`` tape archive
+* Download and unpack functionality
+* Integrity checks for the tarballs
+
+Please feel free to add to the list by opening an issue with the tag 
 
 Benchmarked Tests
 -----------------
