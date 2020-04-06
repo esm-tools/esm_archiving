@@ -22,8 +22,6 @@ import os
 import yaml
 
 
-
-
 # Defaults:
 CONFIG_FNAME = "esm_archiving_config"
 DEFAULT_CONFIG = {
@@ -35,6 +33,15 @@ DEFAULT_CONFIG = {
 }
 
 def load_config():
+    """
+    Loads the configuration from one of the default configuration directories.
+    If none can be found, returns the hard-coded default configuration.
+
+    Returns
+    -------
+    dict
+        A representation of the configuration used for archiving.
+    """
     for loc, hidden in zip(
         [
             os.curdir,
