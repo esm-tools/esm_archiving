@@ -16,7 +16,7 @@ import pandas as pd
 import tqdm
 
 # This Library
-from .external.pypftp import Pftp
+from esm_archiving.external.pypftp import Pftp
 
 
 def query_yes_no(question, default="yes"):  # pragma: no cover
