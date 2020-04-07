@@ -32,7 +32,10 @@ Run the following::
     # Set up a modern git and python environment:
     # Maybe needed on some machines:
     module load git
+    # On Ollie:
     module load python3
+    # On Mistral:
+    module load anaconda3
     # Install the archive project:
     pip install git+https://github.com/esm-tools/esm_archiving
 
