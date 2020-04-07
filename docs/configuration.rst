@@ -23,3 +23,5 @@ By default, ``esm_archive`` looks in the following locations:
 3. Users home folder (As a hidden file)
 4. /etc/esm_archiving
 5. Environmental Variable ESM_ARCHIVING_CONF
+
+If nothing is found, the hard-coded defaults in ``esm_archiving/esm_archiving/config.py`` are used.
