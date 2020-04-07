@@ -1,24 +1,29 @@
 """
-This contains the default configuration used in esm_archiving. If possible, it
-is read from a file .esm_archiving_config. The configuration can be over-ridden
-in the following locations:
-
-    1. Current working directory (As a hidden file)
-    2. Users ${HOME}/.config/esm_archiving
-    3. Users home folder (As a hidden file)
-    4. /etc/esm_archiving
-    5. Environmental Variable ESM_ARCHIVING_CONF
-
-The configuration file should in the YAML format. As an example:
-
-.. code::
+When run from either the command line or in library mode (note **not** as an
+ESM Plugin), ``esm_archiving`` can be configured to how it looks for specific
+files. The configuration file is called ``esm_archiving_config``, should be
+written in YAML, and have the following format::
 
     echam:  # The model name
         archive: # archive seperator **required**
-            frequency: "1M" # Frequency specification
-            date_format: "%Y%m" # Date format specification
+            # Frequency specification (how often 
+            # a datestamp is generated to look for)
+            frequency: "1M" 
+            # Date format specification
+            date_format: "%Y%m"
+
+
+By default, ``esm_archive`` looks in the following locations:
+
+    1. Current working directory
+    2. Any files in the XDG Standard: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html 
+
+
+Note that the default configuration is hard coded in ``esm_archiving/esm_archiving/config.py``
 """
 import os
+
+from xdgenvpy import XDGPedanticPackage
 import yaml
 
 
@@ -32,6 +37,12 @@ DEFAULT_CONFIG = {
     "oasis3mct": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
 }
 
+# Add XDG Standard
+xdg = XDGPedanticPackage('esm_archiving')
+config_dirs =  xdg.XDG_CONFIG_DIRS.split(":")
+config_dirs = [l+"/esm_archiving" for l in xdg.XDG_CONFIG_DIRS]
+config_dirs.insert(0, os.curdir)
+
 def load_config():
     """
     Loads the configuration from one of the default configuration directories.
@@ -42,21 +53,8 @@ def load_config():
     dict
         A representation of the configuration used for archiving.
     """
-    for loc, hidden in zip(
-        [
-            os.curdir,
-            os.path.join(os.path.expanduser("~"), ".config", "esm_archiving"),
-            os.path.expanduser("~"),
-            "/etc/esm_archiving",
-            os.environ.get("ESM_ARCHIVING_CONF", "/dev/null"),
-        ],
-        [True, False, True, False, False,],
-    ):
-        if hidden:
-            read_config_fname = "." + CONFIG_FNAME
-        else:
-            read_config_fname = CONFIG_FNAME
-        print(loc, read_config_fname)
+    for loc in config_dirs:
+        read_config_fname = CONFIG_FNAME
         try:
             with open(os.path.join(loc, read_config_fname)) as source:
                 config = yaml.load(source, Loader=yaml.FullLoader)
