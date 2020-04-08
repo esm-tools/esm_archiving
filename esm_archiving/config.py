@@ -38,10 +38,11 @@ DEFAULT_CONFIG = {
 }
 
 # Add XDG Standard
-xdg = XDGPedanticPackage('esm_archiving')
-config_dirs =  xdg.XDG_CONFIG_DIRS.split(":")
-config_dirs = [l+"/esm_archiving" for l in xdg.XDG_CONFIG_DIRS]
+xdg = XDGPedanticPackage("esm_archiving")
+config_dirs = xdg.XDG_CONFIG_DIRS.split(":")
+config_dirs = [l + "/esm_archiving" for l in xdg.XDG_CONFIG_DIRS]
 config_dirs.insert(0, os.curdir)
+
 
 def load_config():
     """

@@ -157,8 +157,7 @@ def upload(base_dir, start_date, end_date):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
-            remote_archive_name = archive_name.replace(base_dir, remote_base_dir)
-            archive_mistral(archive_name, remote_archive_name)
+            archive_mistral(archive_name)
 
 
 if __name__ == "__main__":
