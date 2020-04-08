@@ -5,7 +5,9 @@ ESM Archiving
 
 .. image:: https://gitlab.awi.de/esm_tools/esm_archiving/badges/master/pipeline.svg
         :target: https://gitlab.awi.de/esm_tools/esm_archiving/commits/master
-
+        
+.. image:: https://github.com/esm-tools/esm_archiving/workflows/Python%20package/badge.svg
+        
 .. image:: https://readthedocs.org/projects/esm-archiving/badge/?version=latest
         :target: https://esm-archiving.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
