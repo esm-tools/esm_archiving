@@ -237,7 +237,7 @@ def stamp_files(model_files):
 
 def get_list_from_filepattern(filepattern):
     dirname = os.path.dirname(filepattern)
-    regex_files = re.compile(os.path.basename(filepattern).replace("#", "\d")) # noqa
+    regex_files = re.compile(os.path.basename(filepattern).replace("#", "\d"))  # noqa
     matching_files = sorted(
         [
             os.path.join(dirname, file)
