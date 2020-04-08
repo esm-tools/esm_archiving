@@ -6,9 +6,9 @@ written in YAML, and have the following format::
 
     echam:  # The model name
         archive: # archive seperator **required**
-            # Frequency specification (how often 
+            # Frequency specification (how often
             # a datestamp is generated to look for)
-            frequency: "1M" 
+            frequency: "1M"
             # Date format specification
             date_format: "%Y%m"
 
@@ -16,10 +16,12 @@ written in YAML, and have the following format::
 By default, ``esm_archive`` looks in the following locations:
 
     1. Current working directory
-    2. Any files in the XDG Standard: https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html 
+    2. Any files in the XDG Standard:
+        https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
 
-Note that the default configuration is hard coded in ``esm_archiving/esm_archiving/config.py``
+Note that the default configuration is hard coded in
+``esm_archiving/esm_archiving/config.py``
 """
 import os
 

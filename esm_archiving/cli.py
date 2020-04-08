@@ -133,7 +133,7 @@ def create(base_dir, start_date, end_date, force, interactive):
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             click.secho(archive_name)
-            out_fname = pack_tarfile(existing[model], base_dir, archive_name)
+            pack_tarfile(existing[model], base_dir, archive_name)
 
 
 @main.command()

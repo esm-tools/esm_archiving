@@ -6,14 +6,12 @@
 import logging
 import os
 import re
-import shlex
 import subprocess
 import sys
 import tarfile
 
 # Third-Party Libraries:
 import pandas as pd
-import tqdm
 
 # This Library
 from esm_archiving.external.pypftp import Pftp
@@ -103,7 +101,8 @@ def group_indexes(index_list):
     Returns
     -------
     list :
-        A list of tuples, so that you can get only one group of ascending tuples.
+        A list of tuples, so that you can get only one group of ascending
+        tuples.
 
     Example
     -------
@@ -132,7 +131,8 @@ def group_indexes(index_list):
 # For each filetype, build file groups
 def group_files(top, filetype):
     """
-    Generates quasi-regexes for a specific filetype, replacing all numbers with #.
+    Generates quasi-regexes for a specific filetype, replacing all numbers with
+    #.
 
     Parameters
     ----------
@@ -203,7 +203,7 @@ def purify_expid_in(model_files, expid, restore=False):
                 else:
                     new_filepattern = filepattern.replace(expid, ">>>EXPID<<<")
                 model_files[model][idx] = new_filepattern
-            except:
+            except KeyError:
                 logging.debug("Can't replace experiment id for: %s", filepattern)
     return model_files
 
@@ -230,15 +230,14 @@ def stamp_files(model_files):
             try:
                 stamped_filepattern = stamp_filepattern(filepattern)
                 model_files[model][idx] = stamped_filepattern
-            except:
+            except KeyError:
                 logging.debug("Can't stamp file: %s", filepattern)
     return model_files
 
 
 def get_list_from_filepattern(filepattern):
     dirname = os.path.dirname(filepattern)
-    files = os.listdir(dirname)
-    regex_files = re.compile(os.path.basename(filepattern).replace("#", "\d"))
+    regex_files = re.compile(os.path.basename(filepattern).replace("#", "\d")) # noqa
     matching_files = sorted(
         [
             os.path.join(dirname, file)
@@ -537,7 +536,7 @@ def run_command(command):
     rc : int
         The return code of the subprocess.
     """
-    process = subprocess.check_call(
+    subprocess.check_call(
         command, stdout=sys.stdout, stderr=subprocess.STDOUT, shell=True
     )
 
@@ -568,9 +567,12 @@ def pack_tarfile(flist, wdir, outname):
     if not wdir.endswith("/"):
         wdir += "/"
     flist = [item.replace(wdir, "") for item in flist]
-    run_command(
-        f"tar --use-compress-program=pigz -cvf {outname} -C {wdir} {' '.join(flist)} | tqdm --total {len(flist)} --unit files >> {outname}.log"
+    tar_part = (
+        f"tar --use-compress-program=pigz -cvf {outname} -C {wdir} {' '.join(flist)}"
     )
+    tqdm_part = f"tqdm --total {len(flist)} --unit files"
+    output_part = f"{outname}.log"
+    run_command(tar_part + "|" + tqdm_part + ">>" + output_part)
     # with tarfile.open(outname, "w:gz") as tar:
     #    for f in tqdm.tqdm(flist):
     #        tar.add(f, arcname=os.path.basename(f))

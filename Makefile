@@ -51,7 +51,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .pytest_cache
 
 lint: ## check style with flake8
-	flake8 esm_archiving tests
+	flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
 test: ## run tests quickly with the default Python
 	python setup.py test

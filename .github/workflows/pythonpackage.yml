@@ -41,5 +41,6 @@ jobs:
         black --check .
     - name: Test with pytest
       run: |
+        pip install -r requirements_dev.txt
         pip install pytest
         pytest
