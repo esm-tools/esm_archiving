@@ -73,6 +73,8 @@ import pprint
 
 import click
 import emoji
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from .esm_archiving import (
     archive_mistral,
@@ -84,10 +86,16 @@ from .esm_archiving import (
     sum_tar_lists_human_readable,
 )
 
+from .database.model import (Experiment, Archive, Tarball, ArchivedFile)
+
 from .config import load_config
 
 pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
+
+# DB Initializations:
+engine = create_engine("sqlite:///:memory:", echo=True)
+Session = sessionmaker(bind=engine)
 
 
 @click.group()
@@ -104,12 +112,17 @@ def main(args=None):
 @click.option("--force", is_flag=True)
 @click.option("--interactive", is_flag=True)
 def create(base_dir, start_date, end_date, force, interactive):
+    session = sessionmaker(bind=engine)
     click.secho(
         emoji.emojize(":file_cabinet:") + " Creating archives for:", color="green"
     )
     click.secho(base_dir, color="green")
     click.secho("From: %s" % start_date, color="green")
     click.secho("To: %s" % end_date, color="green")
+
+    exp_db = Experiment(expid=base_dir.split("/")[-1])
+    session.add(exp_db)
+
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
         files = stamp_files(files)
@@ -132,9 +145,14 @@ def create(base_dir, start_date, end_date, force, interactive):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
+            tarball_db = Tarball(fname=archive_name)
+            session.add(tarball_db) 
             click.secho(archive_name)
             pack_tarfile(existing[model], base_dir, archive_name)
-
+            for file in existing[model]:
+                file_db = ArchivedFile(fname=file)
+                session.add(file_db)
+    session.commit()
 
 @main.command()
 @click.argument("base_dir")
