@@ -20,17 +20,17 @@ class Experiments(Base):
     id = Column(Integer, primary_key=True)
     expid = Column(String, unique=True)
     # One to One relationship with archive:
-    archive = relationship(
-            "Archive",
-            uselist=False,
-            back_populates="exp_ref"
-        )
+    archive = relationship("Archive", uselist=False, back_populates="exp_ref")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):
         str_created_at = self.created_at.strftime("%Y-%m-%d %H:%M:%S")
-        return "<Image (id='%s', expid='%s', archive='%s', created_at=%s)>" % (self.id, self.expid, self.archive, str_created_at)
-
+        return "<Image (id='%s', expid='%s', archive='%s', created_at=%s)>" % (
+            self.id,
+            self.expid,
+            self.archive,
+            str_created_at,
+        )
 
 
 class Archive(Base):

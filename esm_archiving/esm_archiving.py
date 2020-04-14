@@ -271,7 +271,9 @@ def stamp_files(model_files):
                 stamped_filepatterns = stamp_filepattern(filepattern, force_return=True)
                 logging.debug(stamped_filepatterns)
                 idx_modifier += len(stamped_filepatterns)
-                for idx_modifier, stamped_filepattern in enumerate(stamped_filepatterns):
+                for idx_modifier, stamped_filepattern in enumerate(
+                    stamped_filepatterns
+                ):
                     idx += idx_modifier
                     logging.debug(f"Adding [{model}][{idx}] = {stamped_filepattern}")
                     model_files[model][idx] = stamped_filepattern
@@ -403,7 +405,9 @@ def determine_datestamp_location(files):
     try:
         assert len(files) > 1
     except AssertionError:
-        raise DatestampLocationError("Unable to determine a datestamp from just 1 file!")
+        raise DatestampLocationError(
+            "Unable to determine a datestamp from just 1 file!"
+        )
     # Use the first file as a template (Probably a bad idea):
     filepattern = files[0]
     slices = determine_potential_datestamp_locations(filepattern)

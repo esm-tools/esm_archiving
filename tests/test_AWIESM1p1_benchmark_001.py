@@ -1,6 +1,9 @@
 import os
 
-from esm_archiving.esm_archiving import _generate_model_dirs, _walk_through_model_dir_clean_numbers
+from esm_archiving.esm_archiving import (
+    _generate_model_dirs,
+    _walk_through_model_dir_clean_numbers,
+)
 
 from .fake_fs_utils import create_fs_benchmark
 
@@ -19,11 +22,14 @@ def test_tree_exists(fs):
 @create_fs_benchmark(BENCHMARK)
 def test_generate_model_dirs(fs):
     model_dirs = _generate_model_dirs(TOP, "outdata")
-    assert sorted(model_dirs) == sorted(["echam", "fesom", "hdmodel", "jsbach", "oasis3mct"])
+    assert sorted(model_dirs) == sorted(
+        ["echam", "fesom", "hdmodel", "jsbach", "oasis3mct"]
+    )
+
 
 @create_fs_benchmark(BENCHMARK)
 def test_clean_filepatterns_echam_outdata(fs):
-    cleaned_patterns = _walk_through_model_dir_clean_numbers(TOP+"/outdata/echam")
+    cleaned_patterns = _walk_through_model_dir_clean_numbers(TOP + "/outdata/echam")
     expected_filepatterns = [
         "AWIESM1.1_benchmark_###_echam6_ATM_mm_######.nc",
         "AWIESM1.1_benchmark_###_echam6_BOT_mm_######.nc",
@@ -74,6 +80,8 @@ def test_clean_filepatterns_echam_outdata(fs):
         "AWIESM1.1_benchmark_###_echam6_tdiagmon_######.grb",
         "echam_output_results_.txt",
         "echam_output_setup_########.txt",
-            ]
-    expected_filepatterns = [TOP+"/outdata/echam/"+item for item in expected_filepatterns]
+    ]
+    expected_filepatterns = [
+        TOP + "/outdata/echam/" + item for item in expected_filepatterns
+    ]
     assert sorted(expected_filepatterns) == sorted(cleaned_patterns)

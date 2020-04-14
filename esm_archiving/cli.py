@@ -86,7 +86,7 @@ from .esm_archiving import (
     sum_tar_lists_human_readable,
 )
 
-from .database.model import (Base, Experiments, Archive, Tarball, ArchivedFile)
+from .database.model import Base, Experiments, Archive, Tarball, ArchivedFile
 
 from .config import load_config
 
@@ -94,7 +94,7 @@ pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
 
 # DB Initializations:
-engine = create_engine("sqlite:///"+config["general"]["database_file"])
+engine = create_engine("sqlite:///" + config["general"]["database_file"])
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
