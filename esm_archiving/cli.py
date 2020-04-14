@@ -94,7 +94,7 @@ pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
 
 # DB Initializations:
-engine = create_engine("sqlite:////pf/a/a270077/test_archive.db")
+engine = create_engine("sqlite:///"+config["general"]["database_file"])
 Base.metadata.create_all(engine)
 
 Session = sessionmaker(bind=engine)
@@ -163,21 +163,19 @@ def create(base_dir, start_date, end_date, force, interactive):
                 session.add(file_db)
     session.commit()
 
+
 @main.command()
 @click.argument("base_dir")
 @click.argument("start_date")
 @click.argument("end_date")
 def upload(base_dir, start_date, end_date):
-    # Try to make the Pftp object before anything else happens to ensure that
-    # that at least works...
-
+    session = Session()
     click.secho(" Uploading archives for:")
     click.secho(base_dir)
 
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
         files = stamp_files(files)
-
         files = sort_files_to_tarlists(files, start_date, end_date, config)
 
         for model in files:
@@ -185,6 +183,7 @@ def upload(base_dir, start_date, end_date):
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             archive_mistral(archive_name)
+    session.commit()
 
 
 if __name__ == "__main__":

@@ -28,6 +28,11 @@ import os
 from xdgenvpy import XDGPedanticPackage
 import yaml
 
+# Add XDG Standard
+xdg = XDGPedanticPackage("esm_archiving")
+config_dirs = xdg.XDG_CONFIG_DIRS.split(":")
+config_dirs = [l + "/esm_archiving" for l in config_dirs]
+config_dirs.insert(0, os.curdir)
 
 # Defaults:
 CONFIG_FNAME = "esm_archiving_config"
@@ -37,13 +42,9 @@ DEFAULT_CONFIG = {
     "hdmodel": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
     "fesom": {"archive": {"frequency": "1Y", "date_format": "%Y%m"}},
     "oasis3mct": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
+    "general": {"database_file": xdg.XDG_DATA_HOME+"/esm_archiving.db"},
 }
 
-# Add XDG Standard
-xdg = XDGPedanticPackage("esm_archiving")
-config_dirs = xdg.XDG_CONFIG_DIRS.split(":")
-config_dirs = [l + "/esm_archiving" for l in xdg.XDG_CONFIG_DIRS]
-config_dirs.insert(0, os.curdir)
 
 
 def load_config():

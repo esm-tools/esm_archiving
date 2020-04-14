@@ -64,3 +64,4 @@ class ArchivedFile(Base):
     tarball = relationship("Tarball", back_populates="files")
     fname = Column(String, unique=True)
     on_tape = Column(Boolean, default=False)
+    on_disk = Column(Boolean, default=True)
