@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Use this program to create a binary representation of a os.walk for a
+Use this program to create a binary representation of a fs tree for a
 particular directory; useful when you want to re-hydrate and use a particular
 folder/file structure for unit testing.
 
 Example Usage::
 
-    $ ./make_exp_walk /work/ab0246/a270077/esm_benchmarks/exp_001 exp_001_walk.dat
+    $ ./make_fs_snapshot.py /work/ab0246/a270077/esm_benchmarks/exp_001
 
 
 Author:
@@ -17,6 +17,8 @@ Author:
 import argparse
 import os
 import pickle
+
+from fsforge import take_fs_snapshot
 
 
 def parse_args():
@@ -32,7 +34,6 @@ def parse_args():
             you can use to make fake filesystem objects with."""
     )
     parser.add_argument("root")
-    parser.add_argument("ofile")
     return parser.parse_args()
 
 
@@ -52,11 +53,12 @@ def save_tree(obj, ofile):
 
 def main():
     """
-    Main Program: Parse arguments, run os.tree, and save result to a file
+    Main Program: Parse arguments, take_snapshot, and save result to a file
     """
     args = parse_args()
-    tree_answer = list(os.walk(args.root))
-    save_tree(tree_answer, args.ofile)
+    tree = take_fs_snapshot(args.root)
+    ofile = os.path.basename(args.root) + "_fs_snapshot.dat"
+    save_tree(tree, ofile)
 
 
 if __name__ == "__main__":

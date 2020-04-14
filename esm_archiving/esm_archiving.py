@@ -17,6 +17,10 @@ import pandas as pd
 from esm_archiving.external.pypftp import Pftp
 
 
+class DatestampLocationError(Exception):
+    pass
+
+
 def query_yes_no(question, default="yes"):  # pragma: no cover
     """Ask a yes/no question via ``input()`` and return their answer.
 
@@ -166,11 +170,41 @@ def _generate_model_dirs(top, filetype):
     return model_dirs
 
 
-def _walk_through_model_dir_clean_numbers(top):
+def _clean_numbers_nonlonely(s):
+    characters = list(s)
+    number_replacements = []
+    for idx, char in enumerate(characters):
+        if idx == 0:
+            if char.isdigit() and characters[1].isdigit():
+                number_replacements.append(idx)
+            continue
+        while idx < len(characters) - 1:
+            prev_char = characters[idx - 1]
+            next_char = characters[idx + 1]
+            if char.isdigit() and (prev_char.isdigit() or next_char.isdigit()):
+                number_replacements.append(idx)
+            break
+        if idx == len(characters) - 1:
+            prev_char = characters[idx - 1]
+            if prev_char.isdigit() and char.isdigit():
+                number_replacements.append(idx)
+    rlist = []
+    for idx, char in enumerate(characters):
+        if idx in number_replacements:
+            rlist.append("#")
+        else:
+            rlist.append(char)
+    return "".join(rlist)
+
+
+def _walk_through_model_dir_clean_numbers(top, allow_single_numbers=False):
     cleaned_filepatterns = []
     for root, _, files in os.walk(top):
         for file in files:
-            filepattern = "".join([r"#" if c.isdigit() else c for c in file])
+            if allow_single_numbers:
+                filepattern = "".join([r"#" if c.isdigit() else c for c in file])
+            else:
+                filepattern = _clean_numbers_nonlonely(file)
             filepattern = os.path.join(root, filepattern)
             if filepattern not in cleaned_filepatterns:
                 cleaned_filepatterns.append(filepattern)
@@ -226,12 +260,22 @@ def stamp_files(model_files):
         As the input, but replaces the filepatterns with the >>>DATE<<< stamp.
     """
     for model in model_files:
+        idx_modifier = 0
         for idx, filepattern in enumerate(model_files[model]):
+            idx += idx_modifier
             try:
                 stamped_filepattern = stamp_filepattern(filepattern)
+                logging.debug(f"Adding [{model}][{idx}] = {stamped_filepattern}")
                 model_files[model][idx] = stamped_filepattern
-            except KeyError:
-                logging.debug("Can't stamp file: %s", filepattern)
+            except AssertionError:  # List was longer than 1
+                stamped_filepatterns = stamp_filepattern(filepattern, force_return=True)
+                logging.debug(stamped_filepatterns)
+                idx_modifier += len(stamped_filepatterns)
+                for idx_modifier, stamped_filepattern in enumerate(stamped_filepatterns):
+                    idx += idx_modifier
+                    logging.debug(f"Adding [{model}][{idx}] = {stamped_filepattern}")
+                    model_files[model][idx] = stamped_filepattern
+                continue  # needed??
     return model_files
 
 
@@ -248,7 +292,7 @@ def get_list_from_filepattern(filepattern):
     return matching_files
 
 
-def stamp_filepattern(filepattern):
+def stamp_filepattern(filepattern, force_return=False):
     """
     Transforms # in filepatterns to >>>DATE<<< and replaces other numbers back
     to original
@@ -258,21 +302,37 @@ def stamp_filepattern(filepattern):
     filepattern : str
         Filepattern to get date stamps for
 
+    force_return : bool
+        Returns the list of filepatterns even if it is longer than 1.
+
     Returns
     -------
     str :
         New filepattern, with >>>DATE<<<
     """
+    logging.debug("Incoming filepattern: ", filepattern)
+    # If >>>DATE<<< is already in the filepattern, this should be a no-op:
+    if ">>>DATE<<<" in filepattern:
+        return filepattern
+    # No number in this filepattern, nothing to do:
+    if "#" not in filepattern:
+        return filepattern
     # Get full file list:
     matching_files = get_list_from_filepattern(filepattern)
-    datestamp_location = determine_datestamp_location(matching_files)
+    try:
+        datestamp_location = determine_datestamp_location(matching_files)
+    except DatestampLocationError:
+        logging.debug("Couldn't determine a unique datestamp for %s" % filepattern)
+        return filepattern  # PG: This might be a horrible idea...
     files = [f.replace(f[datestamp_location], ">>>DATE<<<") for f in matching_files]
     files = set(files)
     try:
         assert len(files) == 1
     except AssertionError:
-        print(files)
-        raise
+        if force_return:
+            return list(files)
+        else:
+            raise
     filepattern = files.pop()
     return filepattern
 
@@ -336,14 +396,14 @@ def determine_datestamp_location(files):
 
     Raises
     ------
-    LookupError :
+    DatestampLocationError :
         Raised if there is more than one slice found where the numbers vary over
-        different files
-
-    AssertionError :
-        If the length of the file list is not longer than 1.
+        different files -or- if the length of the file list is not longer than 1.
     """
-    assert len(files) > 1
+    try:
+        assert len(files) > 1
+    except AssertionError:
+        raise DatestampLocationError("Unable to determine a datestamp from just 1 file!")
     # Use the first file as a template (Probably a bad idea):
     filepattern = files[0]
     slices = determine_potential_datestamp_locations(filepattern)
@@ -354,7 +414,7 @@ def determine_datestamp_location(files):
         else:
             valid_slices.append(slice_)
     if len(valid_slices) > 1:
-        raise LookupError("Unable to determine a unique datestamp!")
+        raise DatestampLocationError("Unable to determine a unique datestamp!")
     return valid_slices[0]
 
 

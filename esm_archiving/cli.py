@@ -73,6 +73,8 @@ import pprint
 
 import click
 import emoji
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from .esm_archiving import (
     archive_mistral,
@@ -84,10 +86,18 @@ from .esm_archiving import (
     sum_tar_lists_human_readable,
 )
 
+from .database.model import (Base, Experiments, Archive, Tarball, ArchivedFile)
+
 from .config import load_config
 
 pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
+
+# DB Initializations:
+engine = create_engine("sqlite:///"+config["general"]["database_file"])
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
 
 
 @click.group()
@@ -104,12 +114,24 @@ def main(args=None):
 @click.option("--force", is_flag=True)
 @click.option("--interactive", is_flag=True)
 def create(base_dir, start_date, end_date, force, interactive):
+    session = Session()
     click.secho(
         emoji.emojize(":file_cabinet:") + " Creating archives for:", color="green"
     )
     click.secho(base_dir, color="green")
     click.secho("From: %s" % start_date, color="green")
     click.secho("To: %s" % end_date, color="green")
+
+    exp_db = Experiments(expid=base_dir.split("/")[-1])
+    if not session.query(Experiments).filter_by(expid=exp_db.expid).all():
+        session.add(exp_db)
+    else:
+        exp_db = session.query(Experiments).filter_by(expid=exp_db.expid).all()[0]
+
+    archive_db = Archive(exp_ref=exp_db)
+    if not session.query(Archive).filter_by(exp_ref=exp_db):
+        session.add(archive_db)
+
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
         files = stamp_files(files)
@@ -132,8 +154,14 @@ def create(base_dir, start_date, end_date, force, interactive):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
+            tarball_db = Tarball(fname=archive_name, archive=archive_db)
+            session.add(tarball_db)
             click.secho(archive_name)
             pack_tarfile(existing[model], base_dir, archive_name)
+            for file in existing[model]:
+                file_db = ArchivedFile(fname=file, tarball=tarball_db)
+                session.add(file_db)
+    session.commit()
 
 
 @main.command()
@@ -141,16 +169,13 @@ def create(base_dir, start_date, end_date, force, interactive):
 @click.argument("start_date")
 @click.argument("end_date")
 def upload(base_dir, start_date, end_date):
-    # Try to make the Pftp object before anything else happens to ensure that
-    # that at least works...
-
+    session = Session()
     click.secho(" Uploading archives for:")
     click.secho(base_dir)
 
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
         files = stamp_files(files)
-
         files = sort_files_to_tarlists(files, start_date, end_date, config)
 
         for model in files:
@@ -158,6 +183,7 @@ def upload(base_dir, start_date, end_date):
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             archive_mistral(archive_name)
+    session.commit()
 
 
 if __name__ == "__main__":
