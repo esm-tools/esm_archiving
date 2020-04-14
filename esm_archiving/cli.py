@@ -86,7 +86,7 @@ from .esm_archiving import (
     sum_tar_lists_human_readable,
 )
 
-from .database.model import (Experiment, Archive, Tarball, ArchivedFile)
+from .database.model import (Base, Experiments, Archive, Tarball, ArchivedFile)
 
 from .config import load_config
 
@@ -94,7 +94,9 @@ pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
 
 # DB Initializations:
-engine = create_engine("sqlite:///:memory:", echo=True)
+engine = create_engine("sqlite:////pf/a/a270077/test_archive.db")
+Base.metadata.create_all(engine)
+
 Session = sessionmaker(bind=engine)
 
 
@@ -112,7 +114,7 @@ def main(args=None):
 @click.option("--force", is_flag=True)
 @click.option("--interactive", is_flag=True)
 def create(base_dir, start_date, end_date, force, interactive):
-    session = sessionmaker(bind=engine)
+    session = Session()
     click.secho(
         emoji.emojize(":file_cabinet:") + " Creating archives for:", color="green"
     )
@@ -120,7 +122,7 @@ def create(base_dir, start_date, end_date, force, interactive):
     click.secho("From: %s" % start_date, color="green")
     click.secho("To: %s" % end_date, color="green")
 
-    exp_db = Experiment(expid=base_dir.split("/")[-1])
+    exp_db = Experiments(expid=base_dir.split("/")[-1])
     session.add(exp_db)
 
     for filetype in ["outdata", "restart"]:
@@ -146,7 +148,7 @@ def create(base_dir, start_date, end_date, force, interactive):
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
             tarball_db = Tarball(fname=archive_name)
-            session.add(tarball_db) 
+            session.add(tarball_db)
             click.secho(archive_name)
             pack_tarfile(existing[model], base_dir, archive_name)
             for file in existing[model]:

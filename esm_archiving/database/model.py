@@ -23,7 +23,7 @@ class Experiments(Base):
     archive = relationship(
             "Archive",
             uselist=False,
-            back_populates="experiments"
+            back_populates="exp_ref"
         )
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -33,10 +33,10 @@ class Archive(Base):
     id = Column(Integer, primary_key=True)
     # One to One relationship with expid:
     expid_id = Column(Integer, ForeignKey("experiments.id"))
-    expid = relationship("Experiments", back_populates="archives")
+    exp_ref = relationship("Experiments", back_populates="archive")
 
     # One to Many relationship with Tarball:
-    tarballs = relationship("Tarball", back_populates="archives")
+    tarballs = relationship("Tarball", back_populates="archive")
 
 
 class Tarball(Base):
@@ -49,7 +49,7 @@ class Tarball(Base):
     archive = relationship("Archive", back_populates="tarballs")
 
     # One to Many relationship with Files
-    files = relationship("ArchivedFile", back_populates="tarballs")
+    files = relationship("ArchivedFile", back_populates="tarball")
 
 
 class ArchivedFile(Base):

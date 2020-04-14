@@ -1,6 +1,7 @@
-xdgenvpy
 click
-pyyaml
-pandas
-tqdm
 emoji
+pandas
+pyyaml
+sqlalchemy
+tqdm
+xdgenvpy

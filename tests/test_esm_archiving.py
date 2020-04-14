@@ -1,121 +1,21 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""Tests for `esm_archiving` package."""
+"""Tests for ``esm_archiving`` package."""
 
-# Standard Library
-import os
-import pickle
 
-# import unittest
+import unittest
 
 # Third-Party
 from click.testing import CliRunner
-from pyfakefs.fake_filesystem_unittest import TestCase
 
 # This module
 from esm_archiving import esm_archiving
 from esm_archiving import cli
 
 
-class TestESM_archiving_fakefs(TestCase):
-    # TODO: Make this setUpClass
-    def setUp(self):
-        """Set up test fixtures, if any."""
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        test_walk_file = os.path.join(dir_path, "exp_walk.dat")
-        with open(test_walk_file, "rb") as f:
-            rvalue = pickle.load(f)
-        self.setUpPyfakefs()
-        for root, dirs, files in rvalue:
-            for dir_ in dirs:
-                # Skip post dirs
-                if dir_.startswith("post"):
-                    continue
-                os.makedirs(os.path.join(root, dir_))
-            for file in files:
-                self.fs.create_file(os.path.join(root, file))
-
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
-
-    def test_walk_through_model_dir(self):
-        """
-        Checks if walking through a modeltype file directory for a specific
-        model can clean numbers correctly.
-        """
-
-        grouped_files = esm_archiving._walk_through_model_dir_clean_numbers(
-            "./AWIESM1.1_benchmark_001/outdata/echam"
-        )
-
-        expected_answer = [
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hrpt_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymax_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hrpt_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagmon_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_accw_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ma_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echammon_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeropt#hrpt_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagmon_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagday_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_LOG_mm_######.nc",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_BOT_mm_######.nc",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hr_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptday_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagmon_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamday_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#mon_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeropt#hrpt_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiag#hrpt_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptday_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagday_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymin_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymin_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/echam_output_results_.txt",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_co#mon_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ma_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagmon_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptmon_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiag#hrpt_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamdaymax_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_ATM_mm_######.nc",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_cfdiagday_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echamday_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_tdiagday_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_aeroptmon_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echam#hr_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_accw_######.codes",
-            "./AWIESM1.1_benchmark_001/outdata/echam/AWIESM#.#_benchmark_###_echam#_echammon_######.grb",
-            "./AWIESM1.1_benchmark_001/outdata/echam/echam_output_setup_########.txt",
-        ]
-        self.assertEqual(expected_answer, grouped_files)
-
-    def test_generate_model_dirs(self):
-        """
-        Checks if grouping files works correctly
-        """
-        model_dirs = esm_archiving._generate_model_dirs(
-            "./AWIESM1.1_benchmark_001", "outdata"
-        )
-        self.assertEqual(
-            model_dirs, ["echam", "oasis3mct", "hdmodel", "jsbach", "fesom"]
-        )
-
-
-class TestEsm_archiving(TestCase):
+class TestEsm_archiving(unittest.TestCase):
     """Tests for `esm_archiving` package."""
-
-    def setUp(self):
-        """Set up test fixtures, if any."""
-
-    def tearDown(self):
-        """Tear down test fixtures, if any."""
 
     def test_command_line_interface(self):
         """Test the CLI."""
