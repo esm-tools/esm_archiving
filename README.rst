@@ -5,9 +5,9 @@ ESM Archiving
 
 .. image:: https://gitlab.awi.de/esm_tools/esm_archiving/badges/master/pipeline.svg
         :target: https://gitlab.awi.de/esm_tools/esm_archiving/commits/master
-        
+
 .. image:: https://github.com/esm-tools/esm_archiving/workflows/Python%20package/badge.svg
-        
+
 .. image:: https://readthedocs.org/projects/esm-archiving/badge/?version=latest
         :target: https://esm-archiving.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
@@ -25,6 +25,13 @@ tool; allowing you to create archives while your simulations runs. As the
 project is written in Python, any of the functionality can also be embedded in
 other scripts.
 
+
+Pre-Requisites
+--------------
+
+Note that for this software to work, you need **python 3.6** or newer. For
+archiving on **mistral.dkrz.de** you need to have the **pigz** module loaded
+for parallel zipping.
 
 Installing
 ----------

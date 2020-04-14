@@ -69,6 +69,7 @@ https://www.dkrz.de/up/help/faq/hpss/how-can-i-use-the-hpss-tape-archive-without
 
 import sys
 import os
+import tarfile
 import pprint
 
 import click
@@ -182,7 +183,12 @@ def upload(base_dir, start_date, end_date):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
+            tarball_db = Tarball(fname=archive_name)
+
+            q = session.query(Tarball).filter_by(fname=archive_name)
             archive_mistral(archive_name)
+            for f in q.all().pop().files:
+                f.on_tape = True
     session.commit()
 
 

@@ -505,6 +505,8 @@ def sort_files_to_tarlists(model_files, start_date, end_date, config):
         out_lists[model] = sorted(
             list(set([item for sublist in out_lists[model] for item in sublist]))
         )
+    # Remove still empty lists:
+    out_lists = {k: v for k, v in out_lists.items() if v}
     return out_lists
 
 
@@ -699,7 +701,7 @@ def archive_mistral(tfile, rtfile=None):
     None
     """
     if not rtfile:
-        rtfile.replace("/work", "/hpss/arch")
+        rtfile = tfile.replace("/work", "/hpss/arch")
 
     remote_base_dir = os.path.dirname(rtfile)
 

@@ -42,7 +42,7 @@ DEFAULT_CONFIG = {
     "hdmodel": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
     "fesom": {"archive": {"frequency": "1Y", "date_format": "%Y%m"}},
     "oasis3mct": {"archive": {"frequency": "1M", "date_format": "%Y%m"}},
-    "general": {"database_file": xdg.XDG_DATA_HOME + "/esm_archiving.db"},
+    "general": {"database_file": str(xdg.XDG_DATA_HOME) + "/esm_archiving.db"},
 }
 
 
