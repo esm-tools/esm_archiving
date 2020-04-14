@@ -123,7 +123,14 @@ def create(base_dir, start_date, end_date, force, interactive):
     click.secho("To: %s" % end_date, color="green")
 
     exp_db = Experiments(expid=base_dir.split("/")[-1])
-    session.add(exp_db)
+    if not session.query(Experiments).filter_by(expid=exp_db.expid).all():
+        session.add(exp_db)
+    else:
+        exp_db = session.query(Experiments).filter_by(expid=exp_db.expid).all()[0]
+
+    archive_db = Archive(exp_ref=exp_db)
+    if not session.query(Archive).filter_by(exp_ref=exp_db):
+        session.add(archive_db)
 
     for filetype in ["outdata", "restart"]:
         files = group_files(base_dir, filetype)
@@ -147,12 +154,12 @@ def create(base_dir, start_date, end_date, force, interactive):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
-            tarball_db = Tarball(fname=archive_name)
+            tarball_db = Tarball(fname=archive_name, archive=archive_db)
             session.add(tarball_db)
             click.secho(archive_name)
             pack_tarfile(existing[model], base_dir, archive_name)
             for file in existing[model]:
-                file_db = ArchivedFile(fname=file)
+                file_db = ArchivedFile(fname=file, tarball=tarball_db)
                 session.add(file_db)
     session.commit()
 

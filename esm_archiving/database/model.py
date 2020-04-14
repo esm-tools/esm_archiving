@@ -27,6 +27,11 @@ class Experiments(Base):
         )
     created_at = Column(DateTime, default=datetime.utcnow)
 
+    def __repr__(self):
+        str_created_at = self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        return "<Image (id='%s', expid='%s', archive='%s', created_at=%s)>" % (self.id, self.expid, self.archive, str_created_at)
+
+
 
 class Archive(Base):
     __tablename__ = "archives"
