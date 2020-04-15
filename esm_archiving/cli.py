@@ -7,13 +7,17 @@ After installation, you have a new command in your path::
 
 Passing in the argument ``--help`` will show available subcommands::
 
-   Usage: esm_archive [OPTIONS] COMMAND [ARGS]...
+    Usage: esm_archive [OPTIONS] COMMAND [ARGS]...
 
-   Console script for esm_archiving.
+      Console script for esm_archiving.
 
     Options:
-      --version  Show the version and exit.
-      --help     Show this message and exit.
+      --version             Show the version and exit.
+      --write_local_config  Write a local configuration YAML file in the current
+                            working directory
+      --write_config        Write a global configuration YAML file in
+                            ~/.config/esm_archiving/
+      --help                Show this message and exit.
 
     Commands:
       create
@@ -69,7 +73,6 @@ https://www.dkrz.de/up/help/faq/hpss/how-can-i-use-the-hpss-tape-archive-without
 
 import sys
 import os
-import tarfile
 import pprint
 
 import click
@@ -89,7 +92,7 @@ from .esm_archiving import (
 
 from .database.model import Base, Experiments, Archive, Tarball, ArchivedFile
 
-from .config import load_config
+from .config import load_config, write_config_yaml
 
 pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
@@ -101,10 +104,28 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.version_option()
-def main(args=None):
+@click.pass_context
+@click.option(
+    "--write_local_config",
+    is_flag=True,
+    help="Write a local configuration YAML file in the current working directory",
+)
+@click.option(
+    "--write_config",
+    is_flag=True,
+    help="Write a global configuration YAML file in ~/.config/esm_archiving/",
+)
+def main(ctx, write_local_config=False, write_config=False):
     """Console script for esm_archiving."""
+    if ctx.invoked_subcommand is None:
+        if write_config:
+            click.secho("Writing global (user) configuration...")
+            write_config_yaml()
+        if write_local_config:
+            click.secho("Writing local (experiment) configuration...")
+            write_config_yaml(path=os.getcwd())
     return 0
 
 
@@ -183,7 +204,7 @@ def upload(base_dir, start_date, end_date):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
-            tarball_db = Tarball(fname=archive_name)
+            # tarball_db = Tarball(fname=archive_name)
 
             q = session.query(Tarball).filter_by(fname=archive_name)
             archive_mistral(archive_name)

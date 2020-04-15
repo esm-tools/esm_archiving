@@ -20,9 +20,31 @@ By default, ``esm_archive`` looks in the following locations:
         https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
 
 
-Note that the default configuration is hard coded in
+If nothing is found, the program reverts to the hard-coded defaults, found in
 ``esm_archiving/esm_archiving/config.py``
+
+.. note::
+
+    In future, it might be changed that the program will look for an experiment
+    specific configuration based upon the path it is given during the
+    ``create`` or ``upload`` step.
+
+Generating a configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can use the command line switches ``--write_local_config`` and
+``--write_config`` to generate configuration files either in the current
+working directory, or in the global directory for your user account defined by
+the XDG standard (typically ~/.config/esm_archiving)::
+
+    $ esm_archive --write_local_config
+    Writing local (experiment) configuration...
+
+    $ esm_archive --write_config
+    Writing global (user) configuration...
+
 """
+import logging
 import os
 
 from xdgenvpy import XDGPedanticPackage
@@ -65,3 +87,13 @@ def load_config():
         except IOError:
             pass
     return DEFAULT_CONFIG
+
+
+def write_config_yaml(path=None):
+    if not path:
+        path = xdg.XDG_CONFIG_DIRS.split(":")[0] + "/esm_archiving"
+    logging.debug("Opening %s for writing..." % os.path.join(path, CONFIG_FNAME))
+    with open(os.path.join(path, CONFIG_FNAME), "w") as config_file:
+        logging.debug("...dumping...")
+        yaml.dump(DEFAULT_CONFIG, config_file)
+        logging.debug("...done!")
