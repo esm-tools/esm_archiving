@@ -24,7 +24,9 @@ class TestEsm_archiving(unittest.TestCase):
         assert result.exit_code == 0
         help_result = runner.invoke(cli.main, ["--help"])
         assert help_result.exit_code == 0
-        assert "  --help     Show this message and exit." in help_result.output
+        assert "  --help     Show this message and exit.".replace(
+            " ", ""
+        ) in help_result.output.replace(" ", "")
 
     def test_find_indicies(self):
         """Checks if find_indices_of can find # correctly"""

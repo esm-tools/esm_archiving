@@ -14,9 +14,9 @@ Passing in the argument ``--help`` will show available subcommands::
     Options:
       --version             Show the version and exit.
       --write_local_config  Write a local configuration YAML file in the current
-        					working directory
+                            working directory
       --write_config        Write a global configuration YAML file in
-        					~/.config/esm_archiving/
+                            ~/.config/esm_archiving/
       --help                Show this message and exit.
 
     Commands:
@@ -73,7 +73,6 @@ https://www.dkrz.de/up/help/faq/hpss/how-can-i-use-the-hpss-tape-archive-without
 
 import sys
 import os
-import tarfile
 import pprint
 
 import click
@@ -205,7 +204,7 @@ def upload(base_dir, start_date, end_date):
             archive_name = os.path.join(
                 base_dir, f"{model}_{filetype}_{start_date}_{end_date}.tgz"
             )
-            tarball_db = Tarball(fname=archive_name)
+            # tarball_db = Tarball(fname=archive_name)
 
             q = session.query(Tarball).filter_by(fname=archive_name)
             archive_mistral(archive_name)
