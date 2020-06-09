@@ -97,11 +97,12 @@ from .config import load_config, write_config_yaml
 pp = pprint.PrettyPrinter(width=41, compact=True)
 config = load_config()
 
-# DB Initializations:
-engine = create_engine("sqlite:///" + config["general"]["database_file"])
-Base.metadata.create_all(engine)
+if __name__ == "__main__":
+    # DB Initializations (only when actually running):
+    engine = create_engine("sqlite:///" + config["general"]["database_file"])
+    Base.metadata.create_all(engine)
 
-Session = sessionmaker(bind=engine)
+    Session = sessionmaker(bind=engine)
 
 
 @click.group(invoke_without_command=True)
